@@ -31,8 +31,14 @@ and Slack would render it.
 Success is a confident ship / no-ship decision made inside the popup, without
 opening any of those platforms to check. That makes **fidelity the product**.
 A preview that is prettier than reality is a bug, because it produces a wrong
-decision. The same applies to failures: a missing `og:image` or a 404ing URL
-must be stated plainly, not smoothed over.
+decision. The same applies to failures: an image tag that is absent everywhere,
+or a URL that 404s, must be stated plainly rather than smoothed over.
+
+Note the extraction contract this rests on. `og:image` is not the only source —
+`readOpenGraphFromDocument` falls back to `twitter:image`, and does the same for
+title and description. A page carrying only Twitter tags previews normally and
+is not a failure. The missing state means **no Open Graph and no Twitter image
+tag**, which is what the empty-state copy already says.
 
 ## Brand Personality
 
@@ -71,8 +77,12 @@ being exactly right about small things.
    answer to the user's question, not an error to apologise for. Empty states
    name the specific tag or URL at fault and are held to the same craft bar as
    the success path.
-4. **Consulted, not visited.** The popup is read in seconds. Everything the user
-   came for is visible on open; nothing important hides behind interaction.
+4. **Consulted, not visited.** The popup is read in seconds, so the path to any
+   preview is one deliberate click. The five tabs are that path and are the
+   intended way to choose a surface — this principle is not an argument against
+   them. What it rules out is a *second* layer of interaction: disclosures,
+   accordions, hover-only content, "show more", or scrolling to reach something
+   that matters. Within a selected tab, everything is visible at once.
 5. **The 420px width is the design, not a constraint.** Layouts are composed for
    that width rather than squeezed into it.
 

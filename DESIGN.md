@@ -86,7 +86,7 @@ presentation.
 - Two visual systems with a hard border: neutral chrome, verbatim platform cards
 - Flat by default; depth is tonal, never cast
 - Colour appears almost exclusively inside the previews
-- Nothing is hidden behind interaction; the popup is read in seconds
+- One click to a platform, never two; the popup is read in seconds
 - Composed for 420px, not squeezed into it
 
 ## Colors
@@ -98,9 +98,11 @@ real colour on screen.
 ### Primary
 
 - **Signal Blue** (`oklch(0.6204 0.195 253.83)`): the accent, reserved for focus
-  rings and the selected tab indicator. It is the only saturated colour the
-  chrome is permitted, and it appears on well under 10% of the surface. It is
-  *not* used for emphasis, links, or decoration — see The Borrowed Colour Rule.
+  rings. That is currently its only appearance — tab selection is carried by the
+  white pill, not by colour — so in practice the chrome renders with no saturated
+  colour at all until something takes focus. It is the only saturated colour the
+  chrome is *permitted*, and it is not used for emphasis, links, or decoration —
+  see The Borrowed Colour Rule.
 
 ### Neutral
 
@@ -202,23 +204,40 @@ Structure is one tab strip over one panel. There is no scrolling in the common
 case and no responsive behaviour — the popup has exactly one viewport, which is
 what makes 420px a design surface rather than a breakpoint.
 
-Every preview reserves its 1.91:1 box before the image loads, so switching tabs
-or hitting a broken URL never reflows the popup.
+The four image-led surfaces — Image, X, Facebook, LinkedIn — reserve a 1.91:1
+box before the image loads, so a slow or broken URL never collapses the layout
+mid-render. **Slack is the exception:** it renders an 80×80 thumbnail beside the
+text (`size-20`), because that is Slack's real unfurl geometry.
+
+Popup height therefore varies by tab, and by how much text a card has: X is
+image-only, Facebook and LinkedIn add a metadata block under theirs, Slack is
+mostly text. That variation is a consequence of transcribing four different
+layouts and is accepted. What is held constant is that height is stable *within*
+a tab — it does not change as an image loads, fails, or is retried.
 
 ### Named Rules
 
-**The No Second Screen Rule.** Everything the user opened the popup for is
-visible on open. Nothing important lives behind a disclosure, a hover, or a
-scroll. They are here for four seconds.
+**The No Second Screen Rule.** Choosing a platform costs one click on the tab
+strip; nothing costs two. No disclosures, accordions, hover-only content, or
+scrolling to reach something that matters. Within a tab, everything is visible
+at once. They are here for four seconds.
 
 ## Elevation & Depth
 
-Flat. There are no shadows anywhere in the chrome, and none should be added.
+Flat, with one inherited exception.
 
 Depth is tonal: Paper for the field, Frame Grey one step down for the letterbox
 behind an image. That single step is the entire depth vocabulary, and it exists
 for a functional reason — to reveal the edges of a transparent or undersized
 image — not to suggest layering.
+
+The exception is HeroUI's selected-tab pill, which ships with `--surface-shadow`
+(`0 2px 4px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06), 0 0 1px
+rgba(0,0,0,0.06)`). It is a component default rather than a decision made here,
+it is barely perceptible at this scale, and it disappears entirely in dark mode
+where `--surface-shadow` resolves to transparent. Left as-is; overriding a
+library default to satisfy a rule about our own authoring would be pedantry.
+No *new* shadow should be added.
 
 A shadow under a preview card would read as "this card is floating in a feed",
 which is precisely the wrong claim. The cards are specimens on a sheet.
@@ -230,8 +249,9 @@ product, not the product.
 
 ### Named Rules
 
-**The Flat Sheet Rule.** No `box-shadow` in `entrypoints/popup/`. Depth is a
-background-colour step or it does not exist.
+**The Flat Sheet Rule.** No hand-authored `box-shadow` in `entrypoints/popup/`.
+Depth is a background-colour step or it does not exist. HeroUI's own component
+shadows are inherited, not authored, and are exempt.
 
 ## Shapes
 
@@ -258,8 +278,12 @@ decorate; a border either bounds a real container or it is removed.
 - **Character:** a plain segmented control, five items, always fully visible
 - **Labels:** Image, X, Facebook, LinkedIn, Slack — the platform's own name, no
   icons, no counts
-- **Selected:** underline indicator in Signal Blue; the label itself does not
-  change colour or weight (a weight change would shift the strip's metrics)
+- **Selected:** HeroUI's default (primary) `Tabs.Indicator` — a full-height white
+  pill (`--segment`) with a `calc(var(--radius) * 3)` corner, carrying
+  `--surface-shadow`, sliding between tabs over 250ms. The track behind it is
+  `--default`. This is the shipped treatment and is what `preview-tabs.tsx`
+  renders today; the accent-underline alternative is HeroUI's `secondary`
+  variant, which this project does not use.
 - **Focus:** 2px ring, offset 2px, in Signal Blue
 - **Default:** the Image tab. The standalone `og:image` is the ground truth all
   five renderings derive from, so it is what opens.
@@ -313,7 +337,8 @@ the success path.
 
 - **Do** write chrome colours as HeroUI tokens (`bg-background`,
   `text-foreground`, `bg-surface-secondary`) and card colours as literal hex.
-- **Do** reserve the 1.91:1 box before the image loads, on every surface.
+- **Do** reserve the 1.91:1 box before the image loads on the four image-led
+  surfaces (Image, X, Facebook, LinkedIn). Slack keeps its 80×80 thumbnail.
 - **Do** keep `object-contain` on the Image tab and `object-cover` in the
   platform cards. That mismatch is information.
 - **Do** name the specific tag or URL at fault in failure copy.
@@ -326,7 +351,8 @@ the success path.
 
 ### Don't:
 
-- **Don't** add a `box-shadow` anywhere in `entrypoints/popup/`.
+- **Don't** hand-author a `box-shadow` in `entrypoints/popup/`. HeroUI's own
+  component shadows are inherited and exempt.
 - **Don't** apply theme tokens, dark mode, or house radii to the platform cards.
 - **Don't** invert the cards in dark mode; the chrome inverts, the specimens
   don't.
