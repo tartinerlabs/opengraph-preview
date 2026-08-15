@@ -1,0 +1,2 @@
+gitleaks git --staged --redact --verbose
+pnx lint-staged
