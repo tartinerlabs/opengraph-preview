@@ -1,14 +1,7 @@
-import { Spinner, Tabs } from "@heroui/react";
+import { Spinner } from "@heroui/react";
 import { EmptyState } from "@heroui-pro/react";
 import { Icon } from "@iconify/react";
-import { useState } from "react";
-import {
-  FacebookPreview,
-  LinkedInPreview,
-  OgImagePreview,
-  SlackPreview,
-  XPreview,
-} from "./platform-previews.tsx";
+import { PreviewTabs } from "./preview-tabs.tsx";
 import { useOpenGraphPreview } from "./use-open-graph-preview.ts";
 
 function RestrictedState() {
@@ -46,7 +39,6 @@ function ErrorState() {
 
 function App() {
   const state = useOpenGraphPreview();
-  const [imageBroken, setImageBroken] = useState(false);
 
   if (state.status === "loading") {
     return (
@@ -72,59 +64,7 @@ function App() {
     );
   }
 
-  const previewProps = {
-    ...state.tags,
-    imageBroken,
-    onImageBroken: () => {
-      setImageBroken(true);
-    },
-  };
-
-  return (
-    <div className="flex flex-col gap-2 bg-background p-3 text-foreground">
-      <Tabs className="w-full" defaultSelectedKey="image">
-        <Tabs.ListContainer>
-          <Tabs.List aria-label="Platform previews">
-            <Tabs.Tab id="image">
-              Image
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id="x">
-              X
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id="facebook">
-              Facebook
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id="linkedin">
-              LinkedIn
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id="slack">
-              Slack
-              <Tabs.Indicator />
-            </Tabs.Tab>
-          </Tabs.List>
-        </Tabs.ListContainer>
-        <Tabs.Panel className="pt-2" id="image">
-          <OgImagePreview {...previewProps} />
-        </Tabs.Panel>
-        <Tabs.Panel className="pt-2" id="x">
-          <XPreview {...previewProps} />
-        </Tabs.Panel>
-        <Tabs.Panel className="pt-2" id="facebook">
-          <FacebookPreview {...previewProps} />
-        </Tabs.Panel>
-        <Tabs.Panel className="pt-2" id="linkedin">
-          <LinkedInPreview {...previewProps} />
-        </Tabs.Panel>
-        <Tabs.Panel className="pt-2" id="slack">
-          <SlackPreview {...previewProps} />
-        </Tabs.Panel>
-      </Tabs>
-    </div>
-  );
+  return <PreviewTabs tags={state.tags} />;
 }
 
 export default App;
