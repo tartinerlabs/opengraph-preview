@@ -1,34 +1,121 @@
+import { Spinner, Tabs } from "@heroui/react";
+import { EmptyState } from "@heroui-pro/react";
+import { Icon } from "@iconify/react";
 import { useState } from "react";
-import reactLogo from "@/assets/react.svg";
-import wxtLogo from "/wxt.svg";
-import "./App.css";
+import {
+  FacebookPreview,
+  LinkedInPreview,
+  SlackPreview,
+  XPreview,
+} from "./platform-previews.tsx";
+import { useOpenGraphPreview } from "./use-open-graph-preview.ts";
+
+function RestrictedState() {
+  return (
+    <EmptyState size="sm">
+      <EmptyState.Header>
+        <EmptyState.Media variant="icon">
+          <Icon icon="gravity-ui:lock" />
+        </EmptyState.Media>
+        <EmptyState.Title>Restricted page</EmptyState.Title>
+        <EmptyState.Description>
+          Open Graph tags cannot be read on browser pages like chrome:// or the
+          Web Store.
+        </EmptyState.Description>
+      </EmptyState.Header>
+    </EmptyState>
+  );
+}
+
+function ErrorState() {
+  return (
+    <EmptyState size="sm">
+      <EmptyState.Header>
+        <EmptyState.Media variant="icon">
+          <Icon icon="gravity-ui:circle-exclamation" />
+        </EmptyState.Media>
+        <EmptyState.Title>Preview unavailable</EmptyState.Title>
+        <EmptyState.Description>
+          The current tab did not return Open Graph tags.
+        </EmptyState.Description>
+      </EmptyState.Header>
+    </EmptyState>
+  );
+}
 
 function App() {
-  const [count, setCount] = useState(0);
+  const state = useOpenGraphPreview();
+  const [imageBroken, setImageBroken] = useState(false);
+
+  if (state.status === "loading") {
+    return (
+      <div className="flex min-h-40 items-center justify-center bg-background p-3">
+        <Spinner size="sm" />
+      </div>
+    );
+  }
+
+  if (state.status === "restricted") {
+    return (
+      <div className="bg-background p-3 text-foreground">
+        <RestrictedState />
+      </div>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="bg-background p-3 text-foreground">
+        <ErrorState />
+      </div>
+    );
+  }
+
+  const previewProps = {
+    ...state.tags,
+    imageBroken,
+    onImageBroken: () => {
+      setImageBroken(true);
+    },
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://wxt.dev" target="_blank" rel="noopener">
-          <img src={wxtLogo} className="logo" alt="WXT logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noopener">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>WXT + React</h1>
-      <div className="card">
-        <button type="button" onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the WXT and React logos to learn more
-      </p>
-    </>
+    <div className="flex flex-col gap-2 bg-background p-3 text-foreground">
+      <Tabs className="w-full" defaultSelectedKey="x">
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Platform previews">
+            <Tabs.Tab id="x">
+              X
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="facebook">
+              Facebook
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="linkedin">
+              LinkedIn
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="slack">
+              Slack
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
+        <Tabs.Panel className="pt-2" id="x">
+          <XPreview {...previewProps} />
+        </Tabs.Panel>
+        <Tabs.Panel className="pt-2" id="facebook">
+          <FacebookPreview {...previewProps} />
+        </Tabs.Panel>
+        <Tabs.Panel className="pt-2" id="linkedin">
+          <LinkedInPreview {...previewProps} />
+        </Tabs.Panel>
+        <Tabs.Panel className="pt-2" id="slack">
+          <SlackPreview {...previewProps} />
+        </Tabs.Panel>
+      </Tabs>
+    </div>
   );
 }
 
