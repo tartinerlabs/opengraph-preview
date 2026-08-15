@@ -14,3 +14,30 @@ pnpm dev
 Load the unpacked extension from `.output/chrome-mv3-dev` (Chrome) or run `pnpm dev:firefox`. Open a local Next.js route (or any page with OG tags) and click the toolbar icon.
 
 Permissions are `activeTab` and `scripting` only. Browser-internal pages (`chrome://`, the Web Store) cannot be inspected.
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` / `pnpm dev:firefox` | WXT dev server → `.output/chrome-mv3-dev` |
+| `pnpm build` / `pnpm build:firefox` | Production bundle |
+| `pnpm zip` / `pnpm zip:firefox` | Store-ready archive in `.output/` |
+| `pnpm check` / `pnpm format` | Biome lint + format (check / write) |
+| `pnpm compile` | `tsc --noEmit` |
+| `pnpm test` | Vitest suite |
+
+CI runs `check`, `test`, `compile`, and `build` — run all four before opening a pull request.
+
+## Layout
+
+The extension is a single popup entrypoint (no background or content script). Everything lives in `entrypoints/popup/`:
+
+- `use-open-graph-preview.ts` — queries the active tab and injects the extractor via `browser.scripting.executeScript`
+- `extract-open-graph.ts` — the injected, self-contained reader plus pure URL helpers (the only unit-tested module)
+- `app.tsx`, `preview-tabs.tsx`, `platform-previews.tsx`, `preview-image.tsx` — UI states and one component per platform surface
+
+`marketing/` and `vite.capture.config.ts` are the Chrome Web Store asset pipeline and are not part of the extension bundle. `.wxt/` and `.output/` are generated.
+
+## Contributing
+
+See [AGENTS.md](AGENTS.md) for structure, coding style, and commit conventions (Conventional Commits, enforced by commitlint). [CLAUDE.md](CLAUDE.md) adds architecture notes for AI coding agents.
