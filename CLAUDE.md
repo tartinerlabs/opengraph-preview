@@ -47,3 +47,12 @@ Permissions are `activeTab` + `scripting` only (`wxt.config.ts`). Do not add hos
 - UI comes from `@heroui/react` and `@heroui-pro/react` (v3 compound components: `EmptyState.Header`, `Tabs.Panel`). Pro CSS is imported per-component in `style.css`.
 - Popup width is fixed at 420px in `style.css`; layouts must work at that width.
 - `marketing/` is the Chrome Web Store asset pipeline — a standalone Vite app rendering the popup UI at screenshot dimensions with fixture data. It is not part of the extension bundle.
+
+## Design Context
+
+Read [PRODUCT.md](PRODUCT.md) before any UI work; [DESIGN.md](DESIGN.md) carries the visual system. The rules that catch people out:
+
+- **Fidelity over taste.** Inside a platform card, the platform's design wins. Making a card look better than the real thing is a correctness bug, not an improvement — it produces a wrong ship/no-ship decision.
+- **Two systems, one border.** App chrome uses HeroUI tokens (`bg-background`, `text-foreground`, `bg-surface-secondary`). Platform cards use hardcoded third-party hex. Neither leaks into the other.
+- **Accessibility.** WCAG 2.2 AA on app chrome. The platform cards are exempt on copied colour and type values only — structure (alt text, semantics, keyboard, focus) is held to AA everywhere.
+- Voice is flat and specific: name the tag or URL at fault. No exclamation marks, no apologies.
