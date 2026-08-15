@@ -2,6 +2,13 @@
 @import "@heroui/styles";
 @import "@heroui-pro/react/css/components/empty-state.css";
 
+/* HeroUI's stock --muted (oklch(0.5517 …), #71717a) measures 4.43:1 on Paper and
+   4.20:1 on Frame Grey — under AA for the empty-state body copy it carries.
+   Darkened to clear 4.5:1 on both: 4.76:1 on Paper, 4.51:1 on Frame Grey. */
+:root {
+  --muted: oklch(0.535 0.0138 285.94);
+}
+
 html,
 body {
   width: 420px;

@@ -6,7 +6,7 @@ colors:
   foreground: "oklch(0.2103 0.0059 285.89)"
   surface: "oklch(100% 0 0)"
   surface-secondary: "oklch(0.9524 0.0013 286.37)"
-  muted: "oklch(0.5517 0.0138 285.94)"
+  muted: "oklch(0.535 0.0138 285.94)"
   border: "oklch(90% 0.004 286.32)"
   accent: "oklch(0.6204 0.195 253.83)"
   danger: "oklch(0.6532 0.2328 25.74)"
@@ -113,13 +113,12 @@ real colour on screen.
 - **Frame Grey** (`oklch(0.9524 0.0013 286.37)`): the letterbox behind the
   standalone `og:image`. Sits one step under Paper so a transparent or
   short-of-frame PNG shows its own edges rather than dissolving into the field.
-- **Muted** (`oklch(0.5517 0.0138 285.94)`, `#71717a`): secondary and supporting
-  copy. **Known AA gap:** measured at **4.43:1** on Paper (`#f5f5f5`) and
-  **4.20:1** on Frame Grey — both under the 4.5:1 body-text minimum this project
-  commits to. It is HeroUI's stock `--muted`, not a choice made here, but it
-  carries the empty-state descriptions, which is real body copy. Darkening to
-  `oklch(0.545 0.0138 285.94)` (`#6f6f78`) clears Paper at 4.56:1; Frame Grey
-  needs roughly `oklch(0.535 …)`. Unresolved — see Do's and Don'ts.
+- **Muted** (`oklch(0.535 0.0138 285.94)`, `#6c6c75`): secondary and supporting
+  copy, including the empty-state descriptions. Measures **4.76:1** on Paper
+  (`#f5f5f5`) and **4.51:1** on Frame Grey — both clear the 4.5:1 body-text
+  minimum. HeroUI's stock `--muted` is one step lighter
+  (`oklch(0.5517 …)`, `#71717a`) and fails both at 4.43:1 and 4.20:1, so
+  `entrypoints/popup/style.css` overrides the token in `:root`.
 - **Hairline** (`oklch(90% 0.004 286.32)`): borders and separators in the chrome
   at 1px. Never thicker, never coloured.
 
@@ -344,9 +343,9 @@ the success path.
 - **Do** name the specific tag or URL at fault in failure copy.
 - **Do** hold the chrome to WCAG 2.2 AA, and hold card *structure* — alt text,
   semantics, keyboard reach, focus order — to AA as well.
-- **Do** override HeroUI's stock `--muted` before shipping: at `#71717a` it
-  measures 4.43:1 on Paper and 4.20:1 on Frame Grey, under the 4.5:1 body
-  minimum. This is the one open AA item in the chrome.
+- **Do** keep the `--muted` override in `style.css`. HeroUI's stock value
+  (`#71717a`) measures 4.43:1 on Paper and 4.20:1 on Frame Grey, under the 4.5:1
+  body minimum; the override clears both. Do not revert to the stock token.
 - **Do** treat a platform's ugly choice as correct inside its own card.
 
 ### Don't:
