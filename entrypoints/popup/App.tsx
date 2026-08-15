@@ -5,6 +5,7 @@ import { useState } from "react";
 import {
   FacebookPreview,
   LinkedInPreview,
+  OgImagePreview,
   SlackPreview,
   XPreview,
 } from "./platform-previews.tsx";
@@ -81,9 +82,13 @@ function App() {
 
   return (
     <div className="flex flex-col gap-2 bg-background p-3 text-foreground">
-      <Tabs className="w-full" defaultSelectedKey="x">
+      <Tabs className="w-full" defaultSelectedKey="image">
         <Tabs.ListContainer>
           <Tabs.List aria-label="Platform previews">
+            <Tabs.Tab id="image">
+              Image
+              <Tabs.Indicator />
+            </Tabs.Tab>
             <Tabs.Tab id="x">
               X
               <Tabs.Indicator />
@@ -102,6 +107,9 @@ function App() {
             </Tabs.Tab>
           </Tabs.List>
         </Tabs.ListContainer>
+        <Tabs.Panel className="pt-2" id="image">
+          <OgImagePreview {...previewProps} />
+        </Tabs.Panel>
         <Tabs.Panel className="pt-2" id="x">
           <XPreview {...previewProps} />
         </Tabs.Panel>

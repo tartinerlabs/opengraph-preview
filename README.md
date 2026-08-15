@@ -1,6 +1,6 @@
 # Open Graph Preview
 
-Browser extension that reads the current tab’s Open Graph tags and previews how `og:image` would look on X, Facebook, LinkedIn, and Slack.
+Browser extension that reads the current tab’s Open Graph tags and previews the standalone `og:image`, plus how it would look on X, Facebook, LinkedIn, and Slack.
 
 Unlike websites such as metatags.io, this works on **localhost** — it reads the HTML already rendered in the tab, including Next.js `opengraph-image` / `generateMetadata` output.
 

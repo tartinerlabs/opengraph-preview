@@ -6,6 +6,25 @@ type PlatformPreviewProps = OpenGraphTags & {
   onImageBroken: () => void;
 };
 
+export function OgImagePreview({
+  image,
+  imageBroken,
+  onImageBroken,
+  title,
+}: PlatformPreviewProps) {
+  return (
+    <div className="flex aspect-[1.91/1] items-center justify-center overflow-hidden rounded-2xl bg-surface-secondary">
+      <PreviewImage
+        alt={title}
+        broken={imageBroken}
+        className="size-full object-contain"
+        onBroken={onImageBroken}
+        src={image}
+      />
+    </div>
+  );
+}
+
 export function XPreview({
   image,
   imageBroken,

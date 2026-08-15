@@ -1,6 +1,6 @@
 {
   "name": "opengraph-preview",
-  "description": "Preview Open Graph cards for X, Facebook, LinkedIn, and Slack.",
+  "description": "Preview the standalone og:image and social cards for X, Facebook, LinkedIn, and Slack.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
