@@ -223,10 +223,10 @@ image — not to suggest layering.
 A shadow under a preview card would read as "this card is floating in a feed",
 which is precisely the wrong claim. The cards are specimens on a sheet.
 
-The one exception is outside the product: `marketing/capture/capture.css` casts a
-real drop shadow under the popup, because there the popup is being depicted
-hovering over a browser window. That is a photograph of the product, not the
-product.
+Store artwork is the one place this does not apply. The finished screenshots in
+`marketing/` show the popup casting a drop shadow over a browser window, because
+there it is being depicted as a floating panel. That is a photograph of the
+product, not the product.
 
 ### Named Rules
 

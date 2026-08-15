@@ -18,7 +18,6 @@ pnpm format                 # Biome check --write
 pnpm compile                # tsc --noEmit
 pnpm test                   # vitest run
 pnpm vitest run entrypoints/popup/extract-open-graph.test.ts   # single test file
-pnpm vite --config vite.capture.config.ts                      # marketing screenshot harness on :4177
 ```
 
 CI (`.github/workflows/ci.yml`) runs check, test, compile, and build. Husky hooks run gitleaks + lint-staged (pre-commit) and commitlint conventional commits (commit-msg).
@@ -46,7 +45,7 @@ Permissions are `activeTab` + `scripting` only (`wxt.config.ts`). Do not add hos
 - Relative imports carry explicit extensions (`./app.tsx`, `./extract-open-graph.ts`) — `allowImportingTsExtensions` is on.
 - UI comes from `@heroui/react` and `@heroui-pro/react` (v3 compound components: `EmptyState.Header`, `Tabs.Panel`). Pro CSS is imported per-component in `style.css`.
 - Popup width is fixed at 420px in `style.css`; layouts must work at that width.
-- `marketing/` is the Chrome Web Store asset pipeline — a standalone Vite app rendering the popup UI at screenshot dimensions with fixture data. It is not part of the extension bundle.
+- `marketing/` holds the finished Chrome Web Store artwork (screenshots, promo tile). Image assets only — no build step, not part of the extension bundle.
 
 ## Design Context
 
