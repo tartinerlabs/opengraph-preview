@@ -36,7 +36,7 @@ The extension is a single popup entrypoint (no background or content script). Ev
 - `extract-open-graph.ts` — the injected, self-contained reader plus pure URL helpers (the only unit-tested module)
 - `app.tsx`, `preview-tabs.tsx`, `platform-previews.tsx`, `preview-image.tsx` — UI states and one component per platform surface
 
-`marketing/` and `vite.capture.config.ts` are the Chrome Web Store asset pipeline and are not part of the extension bundle. `.wxt/` and `.output/` are generated.
+`marketing/` holds the finished Chrome Web Store artwork and is not part of the extension bundle. `.wxt/` and `.output/` are generated.
 
 ## Contributing
 
