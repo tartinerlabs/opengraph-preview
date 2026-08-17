@@ -28,7 +28,7 @@ Permissions are `activeTab` and `scripting` only. Browser-internal pages (`chrom
 
 CI runs `check`, `test`, `compile`, and `build` — run all four before opening a pull request.
 
-Pushing a `vX.Y.Z` tag (matching `package.json`) zips the Chrome build and submits it to the Chrome Web Store. Chrome publishes it after review. See [AGENTS.md](AGENTS.md) for the required GitHub variables and secrets.
+Merging a conventional commit to `main` (`feat:`, `fix:`, or `BREAKING CHANGE`) versions the extension, zips the Chrome build, and submits it to the Chrome Web Store. Chrome publishes it after review. See [AGENTS.md](AGENTS.md) for the required GitHub variables and secrets. Do not push version tags by hand.
 
 ## Layout
 

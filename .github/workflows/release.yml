@@ -2,14 +2,7 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*.*.*"
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: Authenticate with the Chrome Web Store without uploading a new version
-        type: boolean
-        default: true
+    branches: [main]
 
 concurrency:
   group: chrome-web-store-release
@@ -19,11 +12,18 @@ permissions:
   contents: read
 
 jobs:
-  submit:
+  release:
     runs-on: ubuntu-latest
     environment: chrome-web-store
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2  # v2.0.2
         env:
@@ -31,31 +31,21 @@ jobs:
         with:
           cache: true
 
-      - name: Check tag matches package.json version
-        if: github.ref_type == 'tag'
+      - name: Seed v0.1.0 if no version tags exist
         run: |
-          version="$(node -p "require('./package.json').version")"
-          tag="${GITHUB_REF_NAME#v}"
-          if [ "$tag" != "$version" ]; then
-            echo "Tag $GITHUB_REF_NAME does not match package.json version $version"
-            exit 1
+          if [ -z "$(git tag -l 'v*.*.*')" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a v0.1.0 -m "v0.1.0"
+            git push origin v0.1.0
           fi
 
-      - run: pnpm zip
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: chrome-zip
-          path: .output/*-chrome.zip
-          if-no-files-found: error
-
-      - name: Submit to Chrome Web Store
-        run: pnpm wxt submit --chrome-zip .output/*-chrome.zip
+      - run: pnpm exec semantic-release
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HUSKY: "0"
           CHROME_API_VERSION: v2
-          CHROME_PUBLISH_TYPE: DEFAULT_PUBLISH
-          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
-          CHROME_EXTENSION_ID: ${{ vars.CHROME_EXTENSION_ID || secrets.CHROME_EXTENSION_ID }}
-          CHROME_PUBLISHER_ID: ${{ vars.CHROME_PUBLISHER_ID || secrets.CHROME_PUBLISHER_ID }}
+          CHROME_EXTENSION_ID: ${{ vars.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ vars.CHROME_PUBLISHER_ID }}
           CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
           CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
