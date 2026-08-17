@@ -34,23 +34,29 @@ export function XPreview({
   onImageBroken,
   title,
   twitterCard,
+  twitterDescription,
+  twitterImage,
+  twitterTitle,
   url,
 }: PlatformPreviewProps) {
   const domain = displayHostname(url);
   const isLarge = twitterCard.trim().toLowerCase() === "summary_large_image";
+  const cardTitle = twitterTitle || title;
+  const cardDescription = twitterDescription || description;
+  const cardImage = twitterImage || image;
 
   if (!isLarge) {
-    const showThumb = Boolean(image) && !imageBroken;
+    const showThumb = Boolean(cardImage) && !imageBroken;
 
     return (
       <div className="flex overflow-hidden rounded-2xl border border-[#cfd9de] bg-white font-sans">
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 px-3 py-2">
           <p className="line-clamp-2 text-[15px] leading-5 text-[#0f1419]">
-            {title}
+            {cardTitle}
           </p>
-          {description ? (
+          {cardDescription ? (
             <p className="line-clamp-2 text-[15px] leading-5 text-[#536471]">
-              {description}
+              {cardDescription}
             </p>
           ) : null}
           {domain ? (
@@ -59,33 +65,33 @@ export function XPreview({
         </div>
         {showThumb ? (
           <PreviewImage
-            alt={title}
+            alt={cardTitle}
             broken={imageBroken}
             className="size-[125px] shrink-0 object-cover"
             onBroken={onImageBroken}
-            src={image}
+            src={cardImage}
           />
         ) : null}
       </div>
     );
   }
 
-  const showOverlay = Boolean(image) && !imageBroken;
+  const showOverlay = Boolean(cardImage) && !imageBroken;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#cfd9de] bg-white font-sans">
       <div className="relative aspect-[1.91/1] bg-[#eff3f4]">
         <PreviewImage
-          alt={title}
+          alt={cardTitle}
           broken={imageBroken}
           className="size-full object-cover"
           onBroken={onImageBroken}
-          src={image}
+          src={cardImage}
         />
         {showOverlay ? (
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-4 pb-3 pt-8">
             <p className="line-clamp-2 text-[15px] leading-5 text-white">
-              {title}
+              {cardTitle}
             </p>
             {domain ? (
               <p className="text-[13px] leading-4 text-[#8b98a5]">{domain}</p>
@@ -286,14 +292,14 @@ export function DiscordPreview({
 
 export function WhatsAppPreview({
   description,
+  image,
   imageBroken,
-  ogImage,
   onImageBroken,
   title,
   url,
 }: PlatformPreviewProps) {
   const domain = displayHostname(url);
-  const showThumb = Boolean(ogImage) && !imageBroken;
+  const showThumb = Boolean(image) && !imageBroken;
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#e9edef] bg-white font-sans">
@@ -304,7 +310,7 @@ export function WhatsAppPreview({
             broken={imageBroken}
             className="size-[72px] shrink-0 object-cover"
             onBroken={onImageBroken}
-            src={ogImage}
+            src={image}
           />
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-2 py-1.5">
@@ -326,8 +332,8 @@ export function WhatsAppPreview({
 }
 
 export function RedditPreview({
+  image,
   imageBroken,
-  ogImage,
   onImageBroken,
   title,
   url,
@@ -336,14 +342,14 @@ export function RedditPreview({
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#ccc] bg-white font-sans">
-      {ogImage ? (
+      {image ? (
         <div className="flex aspect-[1.91/1] items-center justify-center bg-[#f6f7f8]">
           <PreviewImage
             alt={title}
             broken={imageBroken}
             className="size-full object-cover object-center"
             onBroken={onImageBroken}
-            src={ogImage}
+            src={image}
           />
         </div>
       ) : null}

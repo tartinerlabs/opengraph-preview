@@ -74,7 +74,11 @@ export function PreviewTabs({
     };
   }, [tags.image]);
 
-  const checks = evaluateChecks(tags, { naturalHeight, naturalWidth });
+  const checks = evaluateChecks(tags, {
+    imageBroken,
+    naturalHeight,
+    naturalWidth,
+  });
   const previewProps = {
     ...tags,
     imageBroken,
@@ -106,7 +110,7 @@ export function PreviewTabs({
           setSelectedKey(String(key));
         }}
       >
-        <Tabs.ListContainer>
+        <Tabs.ListContainer className="overflow-x-auto">
           <Tabs.List aria-label="Platform previews">
             <Tabs.Tab id="image">
               Image
