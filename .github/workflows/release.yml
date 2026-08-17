@@ -19,6 +19,10 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
+
+    env:
+      HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
+
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
@@ -26,19 +30,8 @@ jobs:
           fetch-tags: true
 
       - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2  # v2.0.2
-        env:
-          HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
         with:
           cache: true
-
-      - name: Seed v0.1.0 if no version tags exist
-        run: |
-          if [ -z "$(git tag -l 'v*.*.*')" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git tag -a v0.1.0 -m "v0.1.0"
-            git push origin v0.1.0
-          fi
 
       - run: pnpm exec semantic-release
         env:
