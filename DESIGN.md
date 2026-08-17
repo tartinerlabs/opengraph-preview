@@ -220,7 +220,9 @@ thumbnail on the right otherwise.
 Popup height therefore varies by tab, and by how much text a card has. That
 variation is a consequence of transcribing different layouts and is accepted.
 What is held constant is that height is stable *within* a tab — it does not
-change as an image loads, fails, or is retried.
+change as an image loads, fails, or is retried. **Discord's large-image layout
+is the exception:** the image has no reserved aspect box (`max-h-[300px]` only),
+so popup height can grow when that image loads. That matches Discord's embed.
 
 ### Named Rules
 
@@ -299,8 +301,9 @@ decorate; a border either bounds a real container or it is removed.
   renders today; the accent-underline alternative is HeroUI's `secondary`
   variant, which this project does not use.
 - **Focus:** 2px ring, offset 2px, in Signal Blue
-- **Default:** the Image tab. The standalone `og:image` is the ground truth all
-  platform renderings derive from, so it is what opens.
+- **Default:** the Image tab. It shows the resolved fallback (`og:image`, then
+  `twitter:image`). X, Facebook, LinkedIn, Slack, WhatsApp, and Reddit derive
+  from that same fallback. Discord does not — it uses `og:image` only.
 
 ### Preview Frame (signature component)
 
@@ -320,7 +323,9 @@ The letterbox that holds the standalone `og:image`.
   one platform's card at share time.
 - **Rules:** hardcoded hex only; no theme tokens; no shared abstraction across
   the cards. They look similar today and will diverge whenever a platform changes
-  its card — a shared base component would fight that.
+  its card — a shared base component would fight that. **Discord's left bar is
+  the exception:** it uses the page `theme-color` (falling back to `#202225`)
+  because Discord does. Every other card colour stays a literal hex.
 - **X:** `twitter:card` `summary_large_image` is the large overlay; missing or
   `summary` is the small square-thumbnail card. Drawing the large card when
   `twitter:card` is absent is a correctness bug.
@@ -367,7 +372,8 @@ the success path.
 ### Do:
 
 - **Do** write chrome colours as HeroUI tokens (`bg-background`,
-  `text-foreground`, `bg-surface-secondary`) and card colours as literal hex.
+  `text-foreground`, `bg-surface-secondary`) and card colours as literal hex,
+  except Discord's `theme-color` bar.
 - **Do** reserve the 1.91:1 box before the image loads on Image, X large,
   Facebook, LinkedIn, and Reddit. Slack, WhatsApp, and X summary keep a square
   thumbnail. Discord follows `twitter:card` / aspect.
