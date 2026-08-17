@@ -3,6 +3,8 @@ import { PreviewImage } from "./preview-image.tsx";
 
 type PlatformPreviewProps = OpenGraphTags & {
   imageBroken: boolean;
+  naturalHeight: number | null;
+  naturalWidth: number | null;
   onImageBroken: () => void;
 };
 
@@ -26,13 +28,48 @@ export function OgImagePreview({
 }
 
 export function XPreview({
+  description,
   image,
   imageBroken,
   onImageBroken,
   title,
+  twitterCard,
   url,
 }: PlatformPreviewProps) {
   const domain = displayHostname(url);
+  const isLarge = twitterCard.trim().toLowerCase() === "summary_large_image";
+
+  if (!isLarge) {
+    const showThumb = Boolean(image) && !imageBroken;
+
+    return (
+      <div className="flex overflow-hidden rounded-2xl border border-[#cfd9de] bg-white font-sans">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 px-3 py-2">
+          <p className="line-clamp-2 text-[15px] leading-5 text-[#0f1419]">
+            {title}
+          </p>
+          {description ? (
+            <p className="line-clamp-2 text-[15px] leading-5 text-[#536471]">
+              {description}
+            </p>
+          ) : null}
+          {domain ? (
+            <p className="text-[13px] leading-4 text-[#536471]">{domain}</p>
+          ) : null}
+        </div>
+        {showThumb ? (
+          <PreviewImage
+            alt={title}
+            broken={imageBroken}
+            className="size-[125px] shrink-0 object-cover"
+            onBroken={onImageBroken}
+            src={image}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
   const showOverlay = Boolean(image) && !imageBroken;
 
   return (
@@ -172,4 +209,181 @@ export function SlackPreview({
       ) : null}
     </div>
   );
+}
+
+export function DiscordPreview({
+  description,
+  imageBroken,
+  naturalHeight,
+  naturalWidth,
+  ogDescription,
+  ogImage,
+  ogImageHeight,
+  ogImageWidth,
+  ogSiteName,
+  ogTitle,
+  onImageBroken,
+  themeColor,
+  title,
+  twitterCard,
+}: PlatformPreviewProps) {
+  const embedTitle = ogTitle || title;
+  const embedDescription = ogDescription || description;
+  const barColor = themeColor || "#202225";
+  const large = discordUsesLargeImage(
+    twitterCard,
+    naturalWidth,
+    naturalHeight,
+    ogImageWidth,
+    ogImageHeight,
+  );
+  const showLarge = Boolean(ogImage) && large;
+  const showThumb = Boolean(ogImage) && !large && !imageBroken;
+
+  return (
+    <div className="flex overflow-hidden rounded font-sans">
+      <div className="w-1 shrink-0" style={{ backgroundColor: barColor }} />
+      <div className="flex min-w-0 flex-1 gap-3 bg-[#2b2d31] p-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          {ogSiteName ? (
+            <p className="text-[12px] font-medium leading-4 text-[#949ba4]">
+              {ogSiteName}
+            </p>
+          ) : null}
+          <p className="line-clamp-2 text-[16px] font-semibold leading-5 text-[#00a8fc]">
+            {embedTitle}
+          </p>
+          {embedDescription ? (
+            <p className="line-clamp-3 text-[14px] leading-5 text-[#dbdee1]">
+              {embedDescription}
+            </p>
+          ) : null}
+          {showLarge ? (
+            <div className="mt-2 overflow-hidden rounded">
+              <PreviewImage
+                alt={embedTitle}
+                broken={imageBroken}
+                className="max-h-[300px] w-full object-contain"
+                onBroken={onImageBroken}
+                src={ogImage}
+              />
+            </div>
+          ) : null}
+        </div>
+        {showThumb ? (
+          <PreviewImage
+            alt={embedTitle}
+            broken={imageBroken}
+            className="size-20 shrink-0 rounded object-cover"
+            onBroken={onImageBroken}
+            src={ogImage}
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function WhatsAppPreview({
+  description,
+  imageBroken,
+  ogImage,
+  onImageBroken,
+  title,
+  url,
+}: PlatformPreviewProps) {
+  const domain = displayHostname(url);
+  const showThumb = Boolean(ogImage) && !imageBroken;
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-[#e9edef] bg-white font-sans">
+      <div className="flex">
+        {showThumb ? (
+          <PreviewImage
+            alt={title}
+            broken={imageBroken}
+            className="size-[72px] shrink-0 object-cover"
+            onBroken={onImageBroken}
+            src={ogImage}
+          />
+        ) : null}
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-2 py-1.5">
+          <p className="line-clamp-2 text-[14px] font-medium leading-4 text-[#111b21]">
+            {title}
+          </p>
+          {description ? (
+            <p className="line-clamp-1 text-[13px] leading-4 text-[#667781]">
+              {description}
+            </p>
+          ) : null}
+          {domain ? (
+            <p className="text-[12px] leading-4 text-[#667781]">{domain}</p>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function RedditPreview({
+  imageBroken,
+  ogImage,
+  onImageBroken,
+  title,
+  url,
+}: PlatformPreviewProps) {
+  const domain = displayHostname(url);
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-[#ccc] bg-white font-sans">
+      {ogImage ? (
+        <div className="flex aspect-[1.91/1] items-center justify-center bg-[#f6f7f8]">
+          <PreviewImage
+            alt={title}
+            broken={imageBroken}
+            className="size-full object-cover object-center"
+            onBroken={onImageBroken}
+            src={ogImage}
+          />
+        </div>
+      ) : null}
+      <div className="flex flex-col gap-1 px-3 py-2">
+        <p className="line-clamp-2 text-[16px] font-medium leading-5 text-[#1a1a1b]">
+          {title}
+        </p>
+        {domain ? (
+          <p className="text-[12px] leading-4 text-[#7c7c7c]">{domain}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function discordUsesLargeImage(
+  twitterCard: string,
+  naturalWidth: number | null,
+  naturalHeight: number | null,
+  declaredWidth: string,
+  declaredHeight: string,
+): boolean {
+  const card = twitterCard.trim().toLowerCase();
+  if (card === "summary_large_image") {
+    return true;
+  }
+  if (card === "summary") {
+    return false;
+  }
+
+  const width = naturalWidth ?? Number.parseInt(declaredWidth, 10);
+  const height = naturalHeight ?? Number.parseInt(declaredHeight, 10);
+  if (
+    Number.isFinite(width) &&
+    Number.isFinite(height) &&
+    width > 0 &&
+    height > 0
+  ) {
+    return width > 400 && width >= height;
+  }
+
+  return true;
 }
