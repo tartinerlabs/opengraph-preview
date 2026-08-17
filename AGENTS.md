@@ -24,8 +24,30 @@ Biome is authoritative: use two-space indentation, double quotes, and organized 
 
 ## Testing Guidelines
 
-Use Vitest with `describe`, `it`, and `expect`. Name test files `*.test.ts` or `*.test.tsx` and co-locate them with the implementation. Cover URL normalization, restricted browser pages, missing metadata, and other boundary cases when changing extraction logic. No numeric coverage threshold is configured; add focused regression tests for every behavior change.
+Use Vitest with `describe`, `it`, and `expect`. Name test files `*.test.ts` or `*.test.tsx` and co-locate them with the implementation. Unit tests belong on the pure helpers in `extract-open-graph.ts` and `evaluate-checks.ts` (URL normalization, restricted pages, missing metadata, check messages). There is no coverage threshold. Do not require component tests for platform preview cards or popup chrome; those are reviewed visually.
 
 ## Commit & Pull Request Guidelines
 
 Follow Conventional Commits used in history and enforced by commitlint, for example `feat: add LinkedIn preview` or `fix: resolve relative image URLs`. Keep commits scoped and imperative. Pull requests should explain the user-visible change, link relevant issues, note manual Chrome/Firefox verification, and include screenshots for popup or social-card UI changes. Preserve the minimal `activeTab` and `scripting` permissions unless a permission change is explicitly justified.
+
+## Code Review Rules
+
+Codex: post only findings that would ship a wrong card, drop tags, leak data, or expand permissions. Skip everything else. Prefer a 👍 with no comments over a wall of P2s.
+
+### Do not report
+
+- Formatting, imports, naming taste, comment density, extra abstractions, or anything Biome/`pnpm check` already covers.
+- Unused helpers, types, or missing UI on a stacked PR. Later PRs in the same stack are allowed to wire them up.
+- Missing tests for `platform-previews.tsx`, `preview-tabs.tsx`, or other React chrome. Tests are for extract/check helpers only.
+- Horizontal scrolling of the tab strip at 420px. That layout is intentional.
+- Hardcoded third-party colours, type, or crops inside platform cards. Fidelity beats taste; HeroUI tokens must not leak into those cards.
+- Discord using `og:image` only (no `twitter:image` fallback). That matches Discord.
+- Hypothetical timeouts, 403/405 HEAD bodies, mid-load layout shifts, or other speculative edge cases unless they already break the common path.
+- Scope expansions: more platforms, host permissions, content scripts, cache busting, or “while you’re here” refactors.
+
+### Do report
+
+- New permissions beyond `activeTab` and `scripting`, or a content script, without an explicit justification.
+- `readOpenGraphFromDocument` importing or closing over bindings (Chrome cannot inject it).
+- A platform preview that would make a ship/no-ship decision using the wrong tags or the wrong card variant on the common path.
+- Secrets or credentials in the diff.

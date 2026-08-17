@@ -108,16 +108,39 @@ export async function readOpenGraphFromDocument(): Promise<OpenGraphTags> {
     'meta[property="og:image"]',
     'meta[name="og:image"]',
   );
-  const ogImageWidth = read(
-    document,
-    'meta[property="og:image:width"]',
-    'meta[name="og:image:width"]',
-  );
-  const ogImageHeight = read(
-    document,
-    'meta[property="og:image:height"]',
-    'meta[name="og:image:height"]',
-  );
+  const firstImageEl =
+    document.querySelector('meta[property="og:image"]') ??
+    document.querySelector('meta[name="og:image"]');
+  const metaName = (el: Element | null): string =>
+    (el?.getAttribute("property") ?? el?.getAttribute("name") ?? "").trim();
+  const adjacentStructured = (attr: string): string => {
+    if (!firstImageEl) {
+      return "";
+    }
+    const walk = (next: (el: Element) => Element | null): string => {
+      let current = next(firstImageEl);
+      while (current) {
+        const name = metaName(current);
+        if (name === "og:image") {
+          break;
+        }
+        if (name === attr) {
+          const value = current.getAttribute("content")?.trim();
+          if (value) {
+            return value;
+          }
+        }
+        current = next(current);
+      }
+      return "";
+    };
+    return (
+      walk((el) => el.nextElementSibling) ||
+      walk((el) => el.previousElementSibling)
+    );
+  };
+  const ogImageWidth = adjacentStructured("og:image:width");
+  const ogImageHeight = adjacentStructured("og:image:height");
   const twitterCard = read(
     document,
     'meta[name="twitter:card"]',
@@ -225,52 +248,59 @@ export async function readOpenGraphFromDocument(): Promise<OpenGraphTags> {
     { name: "theme-color", selectors: ['meta[name="theme-color"]'] },
   ];
 
-  let crawlerInvisibleTags: string[] = [];
-  try {
+  const sourceTags = (async (): Promise<string[]> => {
     const response = await fetch(location.href, {
       credentials: "same-origin",
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(750),
     });
-    if (response.ok) {
-      const sourceDoc = new DOMParser().parseFromString(
-        await response.text(),
-        "text/html",
-      );
-      crawlerInvisibleTags = compared
-        .filter(
-          ({ selectors }) =>
-            Boolean(read(document, ...selectors)) &&
-            !read(sourceDoc, ...selectors),
-        )
-        .map(({ name }) => name);
+    if (!response.ok) {
+      return [];
     }
-  } catch {
-    crawlerInvisibleTags = [];
-  }
+    const sourceDoc = new DOMParser().parseFromString(
+      await response.text(),
+      "text/html",
+    );
+    return compared
+      .filter(
+        ({ selectors }) =>
+          Boolean(read(document, ...selectors)) &&
+          !read(sourceDoc, ...selectors),
+      )
+      .map(({ name }) => name);
+  })().catch(() => [] as string[]);
 
-  let imageFileSizeBytes: number | null = null;
-  const rawImage = ogImage || twitterImage;
-  if (rawImage) {
-    try {
-      const resolved = new URL(rawImage, location.href);
-      if (resolved.origin === location.origin) {
-        const response = await fetch(resolved.href, {
-          credentials: "same-origin",
-          method: "HEAD",
-          signal: AbortSignal.timeout(4000),
-        });
-        const length = response.headers.get("content-length");
-        if (length) {
-          const parsed = Number(length);
-          if (Number.isFinite(parsed) && parsed > 0) {
-            imageFileSizeBytes = parsed;
-          }
-        }
-      }
-    } catch {
-      imageFileSizeBytes = null;
+  const imageBytes = (async (): Promise<number | null> => {
+    const rawImage = ogImage || twitterImage;
+    if (!rawImage) {
+      return null;
     }
-  }
+    const resolved = new URL(rawImage, location.href);
+    if (resolved.origin !== location.origin) {
+      return null;
+    }
+    const response = await fetch(resolved.href, {
+      credentials: "same-origin",
+      method: "HEAD",
+      signal: AbortSignal.timeout(750),
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const length = response.headers.get("content-length");
+    if (!length) {
+      return null;
+    }
+    const parsed = Number(length);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return null;
+    }
+    return parsed;
+  })().catch(() => null);
+
+  const [crawlerInvisibleTags, imageFileSizeBytes] = await Promise.all([
+    sourceTags,
+    imageBytes,
+  ]);
 
   return {
     crawlerInvisibleTags,

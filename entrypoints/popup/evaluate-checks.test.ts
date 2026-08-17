@@ -165,6 +165,28 @@ describe("evaluateChecks", () => {
     );
   });
 
+  it("should name a protocol-relative image that resolves to http", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        ogImage: "http://cdn.example.com/og.png",
+        ogImageRaw: "//cdn.example.com/og.png",
+      }).map((check) => check.message),
+    ).toContain(
+      "og:image uses http://cdn.example.com/og.png. WhatsApp and Discord require https.",
+    );
+  });
+
+  it("should name a broken image URL", () => {
+    expect(
+      evaluateChecks(completeTags, {
+        imageBroken: true,
+        naturalHeight: null,
+        naturalWidth: null,
+      }).map((check) => check.message),
+    ).toContain("The og:image URL did not return an image.");
+  });
+
   it("should not flag http images on localhost", () => {
     expect(
       evaluateChecks({

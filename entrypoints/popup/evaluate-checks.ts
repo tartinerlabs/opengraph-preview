@@ -6,6 +6,7 @@ export type Check = {
 };
 
 export type ImageMeta = {
+  imageBroken?: boolean;
   naturalHeight: number | null;
   naturalWidth: number | null;
 };
@@ -123,6 +124,7 @@ export function evaluateChecks(
 
   const primaryRaw = tags.ogImageRaw || tags.twitterImageRaw;
   const primaryTag = tags.ogImageRaw ? "og:image" : "twitter:image";
+  const resolvedImage = tags.ogImage || tags.twitterImage;
 
   if (primaryRaw && isRelativeImageUrl(primaryRaw)) {
     checks.push({
@@ -131,10 +133,20 @@ export function evaluateChecks(
     });
   }
 
-  if (primaryRaw && isHttpOnPublicHost(primaryRaw)) {
+  const httpImage =
+    (primaryRaw && isHttpOnPublicHost(primaryRaw) && primaryRaw) ||
+    (resolvedImage && isHttpOnPublicHost(resolvedImage) && resolvedImage);
+  if (httpImage) {
     checks.push({
       id: "http-image",
-      message: `${primaryTag} uses ${primaryRaw}. WhatsApp and Discord require https.`,
+      message: `${primaryTag} uses ${httpImage}. WhatsApp and Discord require https.`,
+    });
+  }
+
+  if (imageMeta.imageBroken && primaryRaw) {
+    checks.push({
+      id: "image-broken",
+      message: `The ${primaryTag} URL did not return an image.`,
     });
   }
 
