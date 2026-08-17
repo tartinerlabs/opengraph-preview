@@ -22,6 +22,8 @@ pnpm vitest run entrypoints/popup/extract-open-graph.test.ts   # single test fil
 
 CI (`.github/workflows/ci.yml`) runs check, test, compile, and build. Husky hooks run gitleaks + lint-staged (pre-commit) and commitlint conventional commits (commit-msg).
 
+Store releases (`.github/workflows/release.yml`) zip Chrome and run `wxt submit` against the Chrome Web Store API v2. They fire on `v*.*.*` tags that match `package.json`, or via `workflow_dispatch` (dry run by default). Do not add Firefox/Edge submit flags until those listings exist. Credentials and IDs are documented in [AGENTS.md](AGENTS.md).
+
 ## Architecture
 
 A WXT + React 19 browser extension with a **single popup entrypoint** — no background script, no content script. Everything lives in `entrypoints/popup/`.
