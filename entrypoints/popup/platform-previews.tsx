@@ -2,15 +2,29 @@ import { displayHostname, type OpenGraphTags } from "./extract-open-graph.ts";
 import { PreviewImage } from "./preview-image.tsx";
 
 type PlatformPreviewProps = OpenGraphTags & {
-  imageBroken: boolean;
+  brokenImageUrls: ReadonlySet<string>;
   naturalHeight: number | null;
   naturalWidth: number | null;
-  onImageBroken: () => void;
+  onImageBroken: (src: string) => void;
 };
 
+function previewSrc(
+  src: string,
+  brokenImageUrls: ReadonlySet<string>,
+  onImageBroken: (src: string) => void,
+) {
+  return {
+    broken: brokenImageUrls.has(src),
+    onBroken: () => {
+      onImageBroken(src);
+    },
+    src,
+  };
+}
+
 export function OgImagePreview({
+  brokenImageUrls,
   image,
-  imageBroken,
   onImageBroken,
   title,
 }: PlatformPreviewProps) {
@@ -18,19 +32,17 @@ export function OgImagePreview({
     <div className="flex aspect-[1.91/1] items-center justify-center overflow-hidden rounded-2xl bg-surface-secondary">
       <PreviewImage
         alt={title}
-        broken={imageBroken}
         className="size-full object-contain"
-        onBroken={onImageBroken}
-        src={image}
+        {...previewSrc(image, brokenImageUrls, onImageBroken)}
       />
     </div>
   );
 }
 
 export function XPreview({
+  brokenImageUrls,
   description,
   image,
-  imageBroken,
   onImageBroken,
   title,
   twitterCard,
@@ -40,13 +52,15 @@ export function XPreview({
   url,
 }: PlatformPreviewProps) {
   const domain = displayHostname(url);
-  const isLarge = twitterCard.trim().toLowerCase() === "summary_large_image";
+  const card = twitterCard.trim().toLowerCase();
+  const isLarge = card === "summary_large_image" || card === "player";
   const cardTitle = twitterTitle || title;
   const cardDescription = twitterDescription || description;
   const cardImage = twitterImage || image;
+  const imageSrc = previewSrc(cardImage, brokenImageUrls, onImageBroken);
 
   if (!isLarge) {
-    const showThumb = Boolean(cardImage) && !imageBroken;
+    const showThumb = Boolean(cardImage) && !imageSrc.broken;
 
     return (
       <div className="flex overflow-hidden rounded-2xl border border-[#cfd9de] bg-white font-sans">
@@ -66,27 +80,23 @@ export function XPreview({
         {showThumb ? (
           <PreviewImage
             alt={cardTitle}
-            broken={imageBroken}
             className="size-[125px] shrink-0 object-cover"
-            onBroken={onImageBroken}
-            src={cardImage}
+            {...imageSrc}
           />
         ) : null}
       </div>
     );
   }
 
-  const showOverlay = Boolean(cardImage) && !imageBroken;
+  const showOverlay = Boolean(cardImage) && !imageSrc.broken;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#cfd9de] bg-white font-sans">
       <div className="relative aspect-[1.91/1] bg-[#eff3f4]">
         <PreviewImage
           alt={cardTitle}
-          broken={imageBroken}
           className="size-full object-cover"
-          onBroken={onImageBroken}
-          src={cardImage}
+          {...imageSrc}
         />
         {showOverlay ? (
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-4 pb-3 pt-8">
@@ -104,9 +114,9 @@ export function XPreview({
 }
 
 export function FacebookPreview({
+  brokenImageUrls,
   description,
   image,
-  imageBroken,
   onImageBroken,
   title,
   url,
@@ -118,10 +128,8 @@ export function FacebookPreview({
       <div className="flex aspect-[1.91/1] items-center justify-center bg-[#f0f2f5]">
         <PreviewImage
           alt={title}
-          broken={imageBroken}
           className="size-full object-cover"
-          onBroken={onImageBroken}
-          src={image}
+          {...previewSrc(image, brokenImageUrls, onImageBroken)}
         />
       </div>
       <div className="flex flex-col gap-1 bg-[#f0f2f5] px-4 py-2">
@@ -144,9 +152,9 @@ export function FacebookPreview({
 }
 
 export function LinkedInPreview({
+  brokenImageUrls,
   description,
   image,
-  imageBroken,
   onImageBroken,
   title,
   url,
@@ -158,10 +166,8 @@ export function LinkedInPreview({
       <div className="flex aspect-[1.91/1] items-center justify-center bg-[#f3f2ef]">
         <PreviewImage
           alt={title}
-          broken={imageBroken}
           className="size-full object-cover"
-          onBroken={onImageBroken}
-          src={image}
+          {...previewSrc(image, brokenImageUrls, onImageBroken)}
         />
       </div>
       <div className="flex flex-col gap-1 px-4 py-2">
@@ -182,14 +188,15 @@ export function LinkedInPreview({
 }
 
 export function SlackPreview({
+  brokenImageUrls,
   description,
   image,
-  imageBroken,
   onImageBroken,
   siteName,
   title,
 }: PlatformPreviewProps) {
-  const showThumb = Boolean(image) && !imageBroken;
+  const imageSrc = previewSrc(image, brokenImageUrls, onImageBroken);
+  const showThumb = Boolean(image) && !imageSrc.broken;
 
   return (
     <div className="flex gap-2 border-l-4 border-[#e8e8e8] bg-white py-1 pl-3 font-sans">
@@ -207,10 +214,8 @@ export function SlackPreview({
       {showThumb ? (
         <PreviewImage
           alt={title}
-          broken={imageBroken}
           className="size-20 shrink-0 rounded-lg object-cover"
-          onBroken={onImageBroken}
-          src={image}
+          {...imageSrc}
         />
       ) : null}
     </div>
@@ -218,8 +223,8 @@ export function SlackPreview({
 }
 
 export function DiscordPreview({
+  brokenImageUrls,
   description,
-  imageBroken,
   naturalHeight,
   naturalWidth,
   ogDescription,
@@ -243,8 +248,9 @@ export function DiscordPreview({
     ogImageWidth,
     ogImageHeight,
   );
+  const imageSrc = previewSrc(ogImage, brokenImageUrls, onImageBroken);
   const showLarge = Boolean(ogImage) && large;
-  const showThumb = Boolean(ogImage) && !large && !imageBroken;
+  const showThumb = Boolean(ogImage) && !large && !imageSrc.broken;
 
   return (
     <div className="flex overflow-hidden rounded font-sans">
@@ -268,10 +274,8 @@ export function DiscordPreview({
             <div className="mt-2 overflow-hidden rounded">
               <PreviewImage
                 alt={embedTitle}
-                broken={imageBroken}
                 className="max-h-[300px] w-full object-contain"
-                onBroken={onImageBroken}
-                src={ogImage}
+                {...imageSrc}
               />
             </div>
           ) : null}
@@ -279,10 +283,8 @@ export function DiscordPreview({
         {showThumb ? (
           <PreviewImage
             alt={embedTitle}
-            broken={imageBroken}
             className="size-20 shrink-0 rounded object-cover"
-            onBroken={onImageBroken}
-            src={ogImage}
+            {...imageSrc}
           />
         ) : null}
       </div>
@@ -291,15 +293,16 @@ export function DiscordPreview({
 }
 
 export function WhatsAppPreview({
+  brokenImageUrls,
   description,
   image,
-  imageBroken,
   onImageBroken,
   title,
   url,
 }: PlatformPreviewProps) {
   const domain = displayHostname(url);
-  const showThumb = Boolean(image) && !imageBroken;
+  const imageSrc = previewSrc(image, brokenImageUrls, onImageBroken);
+  const showThumb = Boolean(image) && !imageSrc.broken;
 
   return (
     <div className="overflow-hidden rounded-lg border border-[#e9edef] bg-white font-sans">
@@ -307,10 +310,8 @@ export function WhatsAppPreview({
         {showThumb ? (
           <PreviewImage
             alt={title}
-            broken={imageBroken}
             className="size-[72px] shrink-0 object-cover"
-            onBroken={onImageBroken}
-            src={image}
+            {...imageSrc}
           />
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5 px-2 py-1.5">
@@ -332,8 +333,8 @@ export function WhatsAppPreview({
 }
 
 export function RedditPreview({
+  brokenImageUrls,
   image,
-  imageBroken,
   onImageBroken,
   title,
   url,
@@ -346,10 +347,8 @@ export function RedditPreview({
         <div className="flex aspect-[1.91/1] items-center justify-center bg-[#f6f7f8]">
           <PreviewImage
             alt={title}
-            broken={imageBroken}
             className="size-full object-cover object-center"
-            onBroken={onImageBroken}
-            src={image}
+            {...previewSrc(image, brokenImageUrls, onImageBroken)}
           />
         </div>
       ) : null}

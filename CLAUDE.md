@@ -31,7 +31,7 @@ Data flow, popup open → render:
 1. `use-open-graph-preview.ts` queries the active tab, rejects it early via `isRestrictedTabUrl`, then calls `browser.scripting.executeScript` with `readOpenGraphFromDocument`.
 2. `readOpenGraphFromDocument` (in `extract-open-graph.ts`) runs **in the page**. It must stay self-contained — no imports, no closed-over bindings — because Chrome serializes the function body. Anything it needs must be declared inside it.
 3. The hook resolves the returned `image` against the tab URL (`resolveOgImageUrl`) so relative Next.js `opengraph-image` paths work on localhost, and exposes a `PreviewState` union: `loading | restricted | error | ready`.
-4. `app.tsx` switches on that union; `preview-tabs.tsx` owns the shared `imageBroken` flag (one `<img onError>` failure marks the image broken across every tab) and fans props out to `platform-previews.tsx`.
+4. `app.tsx` switches on that union; `preview-tabs.tsx` tracks broken image URLs (one `<img onError>` failure marks that URL broken, not every card) and fans props out to `platform-previews.tsx`.
 
 `platform-previews.tsx` holds one component per surface (og:image, X, Facebook, LinkedIn, Slack). These deliberately hardcode each platform's brand colours and card geometry as literal Tailwind values rather than theme tokens — they are pixel imitations of third-party UI, not app chrome. `preview-image.tsx` centralises the missing/broken image empty states.
 

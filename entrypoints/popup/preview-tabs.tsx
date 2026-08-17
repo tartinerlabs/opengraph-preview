@@ -41,7 +41,9 @@ export function PreviewTabs({
   defaultSelectedKey = "image",
   tags,
 }: PreviewTabsProps) {
-  const [imageBroken, setImageBroken] = useState(false);
+  const [brokenImageUrls, setBrokenImageUrls] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [selectedKey, setSelectedKey] = useState(defaultSelectedKey);
   const [naturalWidth, setNaturalWidth] = useState<number | null>(null);
   const [naturalHeight, setNaturalHeight] = useState<number | null>(null);
@@ -75,17 +77,27 @@ export function PreviewTabs({
   }, [tags.image]);
 
   const checks = evaluateChecks(tags, {
-    imageBroken,
+    brokenImageUrls,
     naturalHeight,
     naturalWidth,
   });
   const previewProps = {
     ...tags,
-    imageBroken,
+    brokenImageUrls,
     naturalHeight,
     naturalWidth,
-    onImageBroken: () => {
-      setImageBroken(true);
+    onImageBroken: (src: string) => {
+      if (!src) {
+        return;
+      }
+      setBrokenImageUrls((current) => {
+        if (current.has(src)) {
+          return current;
+        }
+        const next = new Set(current);
+        next.add(src);
+        return next;
+      });
     },
   };
 

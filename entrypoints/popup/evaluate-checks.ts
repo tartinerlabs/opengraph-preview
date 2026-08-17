@@ -6,7 +6,7 @@ export type Check = {
 };
 
 export type ImageMeta = {
-  imageBroken?: boolean;
+  brokenImageUrls?: ReadonlySet<string>;
   naturalHeight: number | null;
   naturalWidth: number | null;
 };
@@ -108,7 +108,13 @@ export function evaluateChecks(
   }
 
   const card = tags.twitterCard.trim().toLowerCase();
-  if (card !== "summary_large_image") {
+  if (card === "player") {
+    checks.push({
+      id: "twitter-card",
+      message:
+        "twitter:card is player. This popup draws the large image card, not the video player.",
+    });
+  } else if (card !== "summary_large_image") {
     if (!card) {
       checks.push({
         id: "twitter-card",
@@ -143,10 +149,21 @@ export function evaluateChecks(
     });
   }
 
-  if (imageMeta.imageBroken && primaryRaw) {
+  const brokenImageUrls = imageMeta.brokenImageUrls;
+  if (tags.ogImage && brokenImageUrls?.has(tags.ogImage)) {
     checks.push({
       id: "image-broken",
-      message: `The ${primaryTag} URL did not return an image.`,
+      message: "The og:image URL did not return an image.",
+    });
+  }
+  if (
+    tags.twitterImage &&
+    tags.twitterImage !== tags.ogImage &&
+    brokenImageUrls?.has(tags.twitterImage)
+  ) {
+    checks.push({
+      id: "twitter-image-broken",
+      message: "The twitter:image URL did not return an image.",
     });
   }
 

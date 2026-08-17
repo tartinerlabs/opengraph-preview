@@ -143,6 +143,16 @@ describe("evaluateChecks", () => {
     ).toContain("twitter:card is summary. X will not draw the large card.");
   });
 
+  it("should name twitter:card player as a large-image approximation", () => {
+    expect(
+      evaluateChecks({ ...completeTags, twitterCard: "player" }).map(
+        (check) => check.message,
+      ),
+    ).toContain(
+      "twitter:card is player. This popup draws the large image card, not the video player.",
+    );
+  });
+
   it("should name a relative og:image URL", () => {
     expect(
       evaluateChecks({
@@ -177,14 +187,33 @@ describe("evaluateChecks", () => {
     );
   });
 
-  it("should name a broken image URL", () => {
+  it("should name a broken og:image URL", () => {
     expect(
       evaluateChecks(completeTags, {
-        imageBroken: true,
+        brokenImageUrls: new Set([completeTags.ogImage]),
         naturalHeight: null,
         naturalWidth: null,
       }).map((check) => check.message),
     ).toContain("The og:image URL did not return an image.");
+  });
+
+  it("should name a broken twitter:image without blaming og:image", () => {
+    const messages = evaluateChecks(
+      {
+        ...completeTags,
+        twitterImage: "https://example.com/twitter.png",
+        twitterImageRaw: "https://example.com/twitter.png",
+      },
+      {
+        brokenImageUrls: new Set(["https://example.com/twitter.png"]),
+        naturalHeight: 630,
+        naturalWidth: 1200,
+      },
+    ).map((check) => check.message);
+    expect(messages).toContain(
+      "The twitter:image URL did not return an image.",
+    );
+    expect(messages).not.toContain("The og:image URL did not return an image.");
   });
 
   it("should not flag http images on localhost", () => {
