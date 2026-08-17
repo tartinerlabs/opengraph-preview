@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: refs/heads/main
 
       - run: git switch -C main
 
