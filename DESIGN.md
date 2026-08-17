@@ -326,9 +326,11 @@ The letterbox that holds the standalone `og:image`.
   its card — a shared base component would fight that. **Discord's left bar is
   the exception:** it uses the page `theme-color` (falling back to `#202225`)
   because Discord does. Every other card colour stays a literal hex.
-- **X:** `twitter:card` `summary_large_image` is the large overlay; missing or
-  `summary` is the small square-thumbnail card. Drawing the large card when
-  `twitter:card` is absent is a correctness bug.
+- **X:** `twitter:card` `summary_large_image` and `player` use the large overlay;
+  missing or `summary` is the small square-thumbnail card. `player` is an
+  approximation — Tags names that this popup draws the image card, not the video
+  player. Drawing the large card when `twitter:card` is absent is a correctness
+  bug.
 - **Discord:** dark embed, `theme-color` left bar (default `#202225`),
   `og:image` only — never `twitter:image`. Large image vs right thumbnail
   follows `twitter:card` and image aspect.
@@ -336,9 +338,10 @@ The letterbox that holds the standalone `og:image`.
   description. HTTP and tiny images are named in Tags, not smoothed in the card.
 - **Reddit:** new-Reddit wide 1.91:1 card, center crop. Old Reddit's square crop
   is named in Tags, not drawn as a second specimen.
-- **States:** each renders a shared `imageBroken` flag consistently, so one
-  `<img>` failure marks the image broken on every tab at once. The user should
-  never see it load on one tab and fail on another.
+- **States:** image failures are tracked per URL. A broken `twitter:image` must
+  not hide a working `og:image` on Facebook, LinkedIn, Slack, WhatsApp, Reddit,
+  or Discord, and the reverse must not hide a working X image. Tags names each
+  failed tag separately.
 
 ### Tags (chrome)
 

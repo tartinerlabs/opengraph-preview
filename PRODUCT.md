@@ -40,7 +40,7 @@ or a URL that 404s, must be stated plainly rather than smoothed over.
 Note the extraction contract this rests on. `og:image` is not the only source —
 `readOpenGraphFromDocument` falls back to `twitter:image`, and does the same for
 title and description, so a page carrying only Twitter tags still previews on
-X, Facebook, LinkedIn, and Slack. Discord, WhatsApp, and Reddit read `og:image`
+X, Facebook, LinkedIn, Slack, WhatsApp, and Reddit. Discord reads `og:image`
 only. The Image tab empty state still means **no Open Graph and no Twitter
 image tag**. The Tags tab names the fallback when one was used, and names tags
 present in the live DOM but missing from the HTML source, because crawlers do
