@@ -26,19 +26,25 @@ consulted for a few seconds, and dismissed. Nobody is here to browse.
 
 Read the current tab's Open Graph tags and show, faithfully, what the resulting
 card looks like: the standalone `og:image` plus the way X, Facebook, LinkedIn,
-and Slack would render it.
+Slack, Discord, WhatsApp, and Reddit would render it — and whether those cards
+will actually ship.
 
 Success is a confident ship / no-ship decision made inside the popup, without
-opening any of those platforms to check. That makes **fidelity the product**.
+opening any of those platforms to check. That includes "this card will be
+small", "crawlers will miss these tags", and "this image is the wrong shape",
+not only "the picture looks fine here". That makes **fidelity the product**.
 A preview that is prettier than reality is a bug, because it produces a wrong
 decision. The same applies to failures: an image tag that is absent everywhere,
 or a URL that 404s, must be stated plainly rather than smoothed over.
 
 Note the extraction contract this rests on. `og:image` is not the only source —
 `readOpenGraphFromDocument` falls back to `twitter:image`, and does the same for
-title and description. A page carrying only Twitter tags previews normally and
-is not a failure. The missing state means **no Open Graph and no Twitter image
-tag**, which is what the empty-state copy already says.
+title and description, so a page carrying only Twitter tags still previews on
+X, Facebook, LinkedIn, Slack, WhatsApp, and Reddit. Discord reads `og:image`
+only. The Image tab empty state still means **no Open Graph and no Twitter
+image tag**. The Tags tab names the fallback when one was used, and names tags
+present in the live DOM but missing from the HTML source, because crawlers do
+not run JavaScript.
 
 ## Brand Personality
 
@@ -58,9 +64,10 @@ being exactly right about small things.
   social-app sidebar drawn around each card. The card is the subject; frames are
   noise that makes the imitation less believable, not more.
 - **Styling the previews to match the app.** The platform cards must not adopt
-  HeroUI theme tokens. They stay pixel-faithful to X, Facebook, LinkedIn, and
-  Slack even where that means reproducing choices we would not make — including
-  Slack's `border-left` accent bar and low-contrast metadata text.
+  HeroUI theme tokens. They stay pixel-faithful to X, Facebook, LinkedIn,
+  Slack, Discord, WhatsApp, and Reddit even where that means reproducing
+  choices we would not make — including Slack's `border-left` accent bar,
+  Discord's `theme-color` bar on a dark embed, and low-contrast metadata text.
 - **Cramped devtools-panel density.** No 10px text or zero-gutter packing to win
   space at 420px. Quiet is not the same as small.
 
@@ -78,11 +85,14 @@ being exactly right about small things.
    name the specific tag or URL at fault and are held to the same craft bar as
    the success path.
 4. **Consulted, not visited.** The popup is read in seconds, so the path to any
-   preview is one deliberate click. The five tabs are that path and are the
-   intended way to choose a surface — this principle is not an argument against
-   them. What it rules out is a *second* layer of interaction: disclosures,
-   accordions, hover-only content, "show more", or scrolling to reach something
-   that matters. Within a selected tab, everything is visible at once.
+   preview is one deliberate click. The tab strip is that path — Image, the
+   platform cards, and Tags — and is the intended way to choose a surface. The
+   strip scrolls horizontally when the labels overflow 420px; that is still one
+   click, not a second navigation layer. A one-line issue count in the chrome
+   (`3 issues`) selects Tags. What this principle rules out is a *second* layer
+   of interaction: disclosures, accordions, hover-only content, "show more", or
+   wrapping the tabs onto two rows. Within a selected tab, everything is
+   visible at once.
 5. **The 420px width is the design, not a constraint.** Layouts are composed for
    that width rather than squeezed into it.
 
@@ -93,8 +103,9 @@ focus visibility, and `prefers-reduced-motion` alternatives for any animation.
 
 **The platform preview cards are explicitly exempt.** They replicate third-party
 contrast values, including where those values fail AA (for example X's `#8b98a5`
-domain text over a dark gradient, and LinkedIn's 60%-opacity black metadata).
-Correcting them would defeat the product's purpose. This exemption is deliberate
-and scoped: it covers only colour and type values copied from the platform being
-imitated. Everything structural — alt text, semantics, keyboard reachability,
-image failure handling — is held to AA inside the cards as well.
+domain text over a dark gradient, LinkedIn's 60%-opacity black metadata, and
+Discord's `#949ba4` site name on `#2b2d31`). Correcting them would defeat the
+product's purpose. This exemption is deliberate and scoped: it covers only
+colour and type values copied from the platform being imitated. Everything
+structural — alt text, semantics, keyboard reachability, image failure
+handling — is held to AA inside the cards as well.
