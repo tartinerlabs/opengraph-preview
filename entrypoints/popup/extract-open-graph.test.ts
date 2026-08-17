@@ -6,7 +6,7 @@ import {
 } from "./extract-open-graph.ts";
 
 describe("resolveOgImageUrl", () => {
-  it("resolves a root-relative image against the tab URL", () => {
+  it("should resolve a root-relative image against the tab URL", () => {
     expect(
       resolveOgImageUrl(
         "/opengraph-image?abc",
@@ -15,7 +15,7 @@ describe("resolveOgImageUrl", () => {
     ).toBe("http://localhost:3000/opengraph-image?abc");
   });
 
-  it("leaves an absolute production URL unchanged", () => {
+  it("should leave an absolute production URL unchanged", () => {
     expect(
       resolveOgImageUrl(
         "https://example.com/opengraph-image",
@@ -24,23 +24,23 @@ describe("resolveOgImageUrl", () => {
     ).toBe("https://example.com/opengraph-image");
   });
 
-  it("returns an empty string when the image tag is missing", () => {
+  it("should return an empty string when the image tag is missing", () => {
     expect(resolveOgImageUrl("", "http://localhost:3000/")).toBe("");
     expect(resolveOgImageUrl("   ", "http://localhost:3000/")).toBe("");
   });
 
-  it("returns the original value when the URL cannot be parsed", () => {
+  it("should return the original value when the URL cannot be parsed", () => {
     expect(resolveOgImageUrl("not a url", "not-a-base")).toBe("not a url");
   });
 });
 
 describe("isRestrictedTabUrl", () => {
-  it("treats missing and blank URLs as restricted", () => {
+  it("should treat missing and blank URLs as restricted", () => {
     expect(isRestrictedTabUrl(undefined)).toBe(true);
     expect(isRestrictedTabUrl("")).toBe(true);
   });
 
-  it("blocks browser-internal and store pages", () => {
+  it("should block browser-internal and store pages", () => {
     expect(isRestrictedTabUrl("chrome://extensions")).toBe(true);
     expect(isRestrictedTabUrl("about:blank")).toBe(true);
     expect(isRestrictedTabUrl("file:///tmp/index.html")).toBe(true);
@@ -52,18 +52,18 @@ describe("isRestrictedTabUrl", () => {
     ).toBe(true);
   });
 
-  it("allows localhost and ordinary https pages", () => {
+  it("should allow localhost and ordinary https pages", () => {
     expect(isRestrictedTabUrl("http://localhost:3000/blog")).toBe(false);
     expect(isRestrictedTabUrl("https://example.com/post")).toBe(false);
   });
 });
 
 describe("displayHostname", () => {
-  it("strips a leading www from the hostname", () => {
+  it("should strip a leading www from the hostname", () => {
     expect(displayHostname("https://www.example.com/path")).toBe("example.com");
   });
 
-  it("returns an empty string for an invalid URL", () => {
+  it("should return an empty string for an invalid URL", () => {
     expect(displayHostname("not a url")).toBe("");
   });
 });
