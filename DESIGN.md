@@ -1,6 +1,6 @@
 ---
 name: Open Graph Preview
-description: A 420px browser-extension popup that shows the current tab's og:image and its social cards, faithfully.
+description: A 420px browser-extension popup that shows the current tab's og:image, its social cards, and the tags that produced them.
 colors:
   background: "oklch(0.9702 0 0)"
   foreground: "oklch(0.2103 0.0059 285.89)"
@@ -64,8 +64,9 @@ components:
 A photographer's contact sheet exists to let you judge frames. The sheet itself is
 a neutral field, printed edge to edge, with no styling of its own — because
 anything the sheet does visually is a thing you might mistake for something in
-the frame. This popup works the same way. The five platform cards are the frames.
-The chrome around them is the sheet.
+the frame. This popup works the same way. The platform cards are the frames.
+The chrome around them is the sheet — including the Tags tab, which is a
+report on the frames, not a frame itself.
 
 That single idea resolves nearly every visual decision here. The chrome is
 colourless because the cards are full of other companies' brand colour, and the
@@ -135,11 +136,12 @@ and a 420px sheet of white at night is a flashbang. The chrome inverts to
 **Ink** (`oklch(12% 0.005 285.823)`) on **Snow** (`oklch(0.9911 0 0)`), with
 Muted lifting to `oklch(70.5% 0.015 286.067)` to hold contrast.
 
-**The Cards Don't Invert Rule.** The platform previews stay light in dark mode.
-X, Facebook, LinkedIn, and Slack render those cards light for most recipients, so
-inverting them would show the user a card that does not exist. The seam between a
-dark chrome and a light card is correct; it is the boundary between our surface
-and someone else's.
+**The Cards Don't Invert Rule.** The platform previews stay in the colours those
+platforms actually render. X, Facebook, LinkedIn, Slack, WhatsApp, and Reddit
+cards stay light for most recipients, so inverting them would show the user a
+card that does not exist. Discord's embed is dark; it stays dark in light
+chrome. The seam between chrome and a card is correct; it is the boundary
+between our surface and someone else's.
 
 ### Named Rules
 
@@ -173,8 +175,9 @@ only typographic personality on screen belongs to the platforms.
 
 Inside the cards the scale is not ours: X's title runs 15px/20px, Facebook's
 16px/20px semibold over a 12px uppercase domain, LinkedIn's 14px/20px semibold
-over 12px metadata, Slack's 15px/20px bold. These are transcriptions and are not
-part of this hierarchy.
+over 12px metadata, Slack's 15px/20px bold, Discord's 16px/20px title over
+12px site name, WhatsApp's 14px/16px title over a 12px domain, Reddit's
+16px/20px title. These are transcriptions and are not part of this hierarchy.
 
 ### Named Rules
 
@@ -199,27 +202,33 @@ strip and the panel, 8px inside a card's text block. Card internals follow the
 platform (Facebook and LinkedIn pad 16px horizontal, 8px vertical; Slack indents
 12px from its accent bar).
 
-Structure is one tab strip over one panel. There is no scrolling in the common
-case and no responsive behaviour — the popup has exactly one viewport, which is
-what makes 420px a design surface rather than a breakpoint.
+Structure is one tab strip over one panel. The strip scrolls horizontally when
+labels overflow 420px; it does not wrap. There is no scrolling in the common
+preview case and no responsive behaviour — the popup has exactly one viewport,
+which is what makes 420px a design surface rather than a breakpoint. The Tags
+tab is taller when it lists issues and raw tags; that height is content, not a
+second screen.
 
-The four image-led surfaces — Image, X, Facebook, LinkedIn — reserve a 1.91:1
-box before the image loads, so a slow or broken URL never collapses the layout
-mid-render. **Slack is the exception:** it renders an 80×80 thumbnail beside the
-text (`size-20`), because that is Slack's real unfurl geometry.
+The image-led surfaces — Image, X large card, Facebook, LinkedIn, Reddit —
+reserve a 1.91:1 box before the image loads, so a slow or broken URL never
+collapses the layout mid-render. **Slack, WhatsApp, and X summary are the
+exceptions:** they render a square thumbnail beside the text, because that is
+those platforms' real unfurl geometry. Discord switches: large image below the
+text when `twitter:card` is `summary_large_image` (or the image is wide), small
+thumbnail on the right otherwise.
 
-Popup height therefore varies by tab, and by how much text a card has: X is
-image-only, Facebook and LinkedIn add a metadata block under theirs, Slack is
-mostly text. That variation is a consequence of transcribing four different
-layouts and is accepted. What is held constant is that height is stable *within*
-a tab — it does not change as an image loads, fails, or is retried.
+Popup height therefore varies by tab, and by how much text a card has. That
+variation is a consequence of transcribing different layouts and is accepted.
+What is held constant is that height is stable *within* a tab — it does not
+change as an image loads, fails, or is retried.
 
 ### Named Rules
 
 **The No Second Screen Rule.** Choosing a platform costs one click on the tab
-strip; nothing costs two. No disclosures, accordions, hover-only content, or
-scrolling to reach something that matters. Within a tab, everything is visible
-at once. They are here for four seconds.
+strip; nothing costs two. Horizontal overflow on the strip is still one click.
+A chrome issue count that selects Tags is still one click. No disclosures,
+accordions, hover-only content, or wrapping the tabs onto a second row. Within
+a tab, everything is visible at once. They are here for four seconds.
 
 ## Elevation & Depth
 
@@ -262,10 +271,12 @@ controls. Soft enough to feel like part of a modern browser popup, plain enough
 to disappear.
 
 Card corners are transcribed: X at 16px, LinkedIn at 8px, Facebook square,
-Slack square with a 4px left accent bar. **Slack's bar is a deliberate, scoped
-exception to the general prohibition on thick side-stripe borders** — it is what
-Slack actually draws, and removing it would make the imitation wrong. It is
-permitted inside `SlackPreview` and nowhere else.
+Slack square with a 4px left accent bar, Discord with a 4px `theme-color` bar
+on a dark embed, WhatsApp at 8px, Reddit at 8px. **Slack's bar and Discord's
+bar are a deliberate, scoped exception to the general prohibition on thick
+side-stripe borders** — they are what those platforms actually draw, and
+removing them would make the imitation wrong. They are permitted inside
+`SlackPreview` and `DiscordPreview` and nowhere else.
 
 Borders throughout are 1px hairlines. Nothing in the chrome uses a border to
 decorate; a border either bounds a real container or it is removed.
@@ -274,9 +285,13 @@ decorate; a border either bounds a real container or it is removed.
 
 ### Tab Strip
 
-- **Character:** a plain segmented control, five items, always fully visible
-- **Labels:** Image, X, Facebook, LinkedIn, Slack — the platform's own name, no
-  icons, no counts
+- **Character:** a plain segmented control. Labels overflow into HeroUI's
+  `Tabs.ListContainer` horizontal scroll; they never wrap to a second row.
+- **Labels:** Image, X, Facebook, LinkedIn, Slack, Discord, WhatsApp, Reddit,
+  Tags — the platform's own name, no icons. Tags is chrome, last in the strip.
+- **Issue count:** when `evaluateChecks` returns items, a one-line ghost
+  control above the strip (`3 issues`) selects the Tags tab. The count is
+  chrome, not a badge on the tab label.
 - **Selected:** HeroUI's default (primary) `Tabs.Indicator` — a full-height white
   pill (`--segment`) with a `calc(var(--radius) * 3)` corner, carrying
   `--surface-shadow`, sliding between tabs over 250ms. The track behind it is
@@ -285,7 +300,7 @@ decorate; a border either bounds a real container or it is removed.
   variant, which this project does not use.
 - **Focus:** 2px ring, offset 2px, in Signal Blue
 - **Default:** the Image tab. The standalone `og:image` is the ground truth all
-  five renderings derive from, so it is what opens.
+  platform renderings derive from, so it is what opens.
 
 ### Preview Frame (signature component)
 
@@ -304,11 +319,28 @@ The letterbox that holds the standalone `og:image`.
 - **Character:** transcriptions, not components. Each is a fixed reproduction of
   one platform's card at share time.
 - **Rules:** hardcoded hex only; no theme tokens; no shared abstraction across
-  the five. They look similar today and will diverge whenever a platform changes
+  the cards. They look similar today and will diverge whenever a platform changes
   its card — a shared base component would fight that.
+- **X:** `twitter:card` `summary_large_image` is the large overlay; missing or
+  `summary` is the small square-thumbnail card. Drawing the large card when
+  `twitter:card` is absent is a correctness bug.
+- **Discord:** dark embed, `theme-color` left bar (default `#202225`),
+  `og:image` only — never `twitter:image`. Large image vs right thumbnail
+  follows `twitter:card` and image aspect.
+- **WhatsApp:** compact light card, 72px thumb, two-line title, one-line
+  description. HTTP and tiny images are named in Tags, not smoothed in the card.
+- **Reddit:** new-Reddit wide 1.91:1 card, center crop. Old Reddit's square crop
+  is named in Tags, not drawn as a second specimen.
 - **States:** each renders a shared `imageBroken` flag consistently, so one
   `<img>` failure marks the image broken on every tab at once. The user should
   never see it load on one tab and fail on another.
+
+### Tags (chrome)
+
+App chrome, not a platform card. A flat list of checks (no accordion), then a
+raw tag table (property, value, copy), then a one-line note that Facebook,
+LinkedIn, Reddit, and WhatsApp cache the first scrape. Empty copy: `No issues
+in the tags this popup can see.` Issue copy names the tag or URL at fault.
 
 ### Empty States
 
@@ -336,10 +368,13 @@ the success path.
 
 - **Do** write chrome colours as HeroUI tokens (`bg-background`,
   `text-foreground`, `bg-surface-secondary`) and card colours as literal hex.
-- **Do** reserve the 1.91:1 box before the image loads on the four image-led
-  surfaces (Image, X, Facebook, LinkedIn). Slack keeps its 80×80 thumbnail.
+- **Do** reserve the 1.91:1 box before the image loads on Image, X large,
+  Facebook, LinkedIn, and Reddit. Slack, WhatsApp, and X summary keep a square
+  thumbnail. Discord follows `twitter:card` / aspect.
 - **Do** keep `object-contain` on the Image tab and `object-cover` in the
-  platform cards. That mismatch is information.
+  platform cards that crop. Discord's large image is `object-contain` because
+  Discord scales to fit rather than center-cropping. That mismatch is
+  information.
 - **Do** name the specific tag or URL at fault in failure copy.
 - **Do** hold the chrome to WCAG 2.2 AA, and hold card *structure* — alt text,
   semantics, keyboard reach, focus order — to AA as well.
@@ -354,14 +389,17 @@ the success path.
   component shadows are inherited and exempt.
 - **Don't** apply theme tokens, dark mode, or house radii to the platform cards.
 - **Don't** invert the cards in dark mode; the chrome inverts, the specimens
-  don't.
+  keep the colours those platforms actually render. Discord stays dark.
 - **Don't** use `border-left` or `border-right` above 1px as an accent —
-  `SlackPreview`'s 4px bar is the sole permitted instance, because Slack draws it.
+  `SlackPreview`'s 4px bar and `DiscordPreview`'s `theme-color` bar are the
+  permitted instances, because those platforms draw them.
 - **Don't** put chrome text below 13px to win space at 420px.
 - **Don't** introduce a second accent colour, or use Signal Blue for anything but
   focus and selection.
-- **Don't** abstract the five platform cards into a shared configurable
-  component. They are five transcriptions that happen to rhyme.
+- **Don't** abstract the platform cards into a shared configurable
+  component. They are transcriptions that happen to rhyme.
+- **Don't** wrap the tab strip onto two rows, or add a second navigation layer
+  to reach Discord, WhatsApp, Reddit, or Tags.
 - **Don't** draw fake browser chrome, phone bezels, or app sidebars around a
   preview. The card is the subject.
 - **Don't** add empty-state action buttons; the fix lives in the user's HTML.
