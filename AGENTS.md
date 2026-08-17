@@ -18,7 +18,7 @@ Static extension icons are under `public/icons/`. Finished Chrome Web Store artw
 
 Before opening a pull request, run `pnpm check`, `pnpm test`, `pnpm compile`, and `pnpm build`; CI requires all four.
 
-Chrome Web Store releases run from `.github/workflows/release.yml` on push to `main`. semantic-release versions from conventional commits (`feat:` minor, `fix:` patch, `BREAKING CHANGE` major), then zips Chrome and runs `wxt submit`. Do not push version tags by hand. Firefox is not submitted.
+Chrome Web Store releases run from `.github/workflows/release.yml` after CI succeeds on `main`. semantic-release versions from conventional commits (`feat:` minor, `fix:` patch, `BREAKING CHANGE` major), then zips Chrome and runs `wxt submit`. Do not push version tags by hand. Firefox is not submitted.
 
 Set GitHub Actions variables `CHROME_EXTENSION_ID` and `CHROME_PUBLISHER_ID`, and secrets `CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL`, `CHROME_SERVICE_ACCOUNT_PRIVATE_KEY`, plus the existing `HEROUI_AUTH_TOKEN`. Use Chrome Web Store API v2: create a Google Cloud service account, enable the Chrome Web Store API, and add the service account email under Account in the Developer Dashboard. Publisher ID is the path segment in `https://chrome.google.com/webstore/devconsole/{publisherId}`. Do not commit `.env.submit`.
 
