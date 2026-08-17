@@ -47,11 +47,14 @@ export function useOpenGraphPreview(): PreviewState {
           return;
         }
 
+        const pageUrl = tab.url ?? raw.url;
         setState({
           status: "ready",
           tags: {
             ...raw,
-            image: resolveOgImageUrl(raw.image, tab.url ?? raw.url),
+            image: resolveOgImageUrl(raw.image, pageUrl),
+            ogImage: resolveOgImageUrl(raw.ogImage, pageUrl),
+            twitterImage: resolveOgImageUrl(raw.twitterImage, pageUrl),
           },
         });
       } catch {
