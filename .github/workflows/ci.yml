@@ -19,18 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
 
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86  # v6.0.10
-        with:
-          version: 11
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
-        with:
-          node-version: "lts/*"
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+      - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2  # v2.0.2
         env:
           HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
+        with:
+          cache: true
 
       - parallel:
           - name: Check
