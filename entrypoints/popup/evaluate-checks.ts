@@ -188,7 +188,13 @@ export function evaluateChecks(
   const primaryTag = tags.ogImageRaw ? "og:image" : "twitter:image";
   const resolvedImage = tags.ogImage || tags.twitterImage;
 
-  if (primaryRaw && isRelativeImageUrl(primaryRaw)) {
+  const imageScheme = /^([a-z][a-z\d+.-]*):/i.exec(primaryRaw.trim())?.[1];
+  if (imageScheme && !/^https?$/i.test(imageScheme)) {
+    checks.push({
+      id: "relative-image",
+      message: `${primaryTag} is a ${imageScheme.toLowerCase()}: URL. Crawlers only fetch http(s) images.`,
+    });
+  } else if (primaryRaw && isRelativeImageUrl(primaryRaw)) {
     checks.push({
       id: "relative-image",
       message: `${primaryTag} is a relative URL (${primaryRaw}). Crawlers will not resolve it.`,

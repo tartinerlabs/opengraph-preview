@@ -172,6 +172,19 @@ describe("evaluateChecks", () => {
     );
   });
 
+  it("should name a data: og:image by scheme, not as a relative URL", () => {
+    const messages = evaluateChecks({
+      ...completeTags,
+      ogImageRaw: "data:image/png;base64,iVBORw0KGgo=",
+    }).map((check) => check.message);
+    expect(messages).toContain(
+      "og:image is a data: URL. Crawlers only fetch http(s) images.",
+    );
+    expect(messages.some((message) => message.includes("relative"))).toBe(
+      false,
+    );
+  });
+
   it("should name an http og:image on a public host", () => {
     expect(
       evaluateChecks({
