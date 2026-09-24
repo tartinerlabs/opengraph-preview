@@ -44,6 +44,8 @@
     "@commitlint/cli": "21.2.2",
     "@commitlint/config-conventional": "21.2.2",
     "@commitlint/types": "21.2.0",
+    "@iconify-json/gravity-ui": "1.2.14",
+    "@iconify-json/simple-icons": "1.2.97",
     "@semantic-release/changelog": "7.0.0",
     "@semantic-release/commit-analyzer": "13.0.1",
     "@semantic-release/exec": "7.1.0",

@@ -1,10 +1,11 @@
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "wxt";
+import { iconSubset } from "./vite-icon-subset.ts";
 
 export default defineConfig({
   modules: ["@wxt-dev/module-react"],
   vite: () => ({
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), iconSubset()],
   }),
   manifest: {
     name: "Open Graph Preview",

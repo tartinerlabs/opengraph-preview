@@ -4,7 +4,7 @@
 
 This is a WXT browser extension built with React and TypeScript. Extension code lives in `entrypoints/popup/`: `main.tsx` mounts the popup, `app.tsx` coordinates UI states, and feature components, hooks, styles, and Open Graph extraction utilities sit alongside it. Keep tests next to the code they cover, as in `extract-open-graph.test.ts`.
 
-Static extension icons are under `public/icons/`. Finished Chrome Web Store artwork lives in `marketing/`; it is image assets only, with no build step. WXT generates `.wxt/` and `.output/`, so neither directory should be edited or committed. Root configuration includes `wxt.config.ts`, `tsconfig.json`, and `biome.json`.
+Static extension icons are under `public/icons/`. Finished Chrome Web Store artwork lives in `marketing/`; it is image assets only, with no build step. WXT generates `.wxt/` and `.output/`, so neither directory should be edited or committed. Root configuration includes `wxt.config.ts`, `tsconfig.json`, and `biome.json`. `vite-icon-subset.ts` is the Vite plugin that bundles the icons named in `ICON_NAMES` so the popup never fetches icons from the network.
 
 ## Build, Test, and Development Commands
 
@@ -26,12 +26,12 @@ Set GitHub Actions variables `CHROME_EXTENSION_ID` and `CHROME_PUBLISHER_ID`, an
 
 A WXT + React 19 browser extension with a **single popup entrypoint**: no background script, no content script. Data flow, popup open to render:
 
-1. `use-open-graph-preview.ts` queries the active tab, rejects it early via `isRestrictedTabUrl`, then calls `browser.scripting.executeScript` with `readOpenGraphFromDocument`.
+1. `use-open-graph-preview.ts` queries the active tab, keeps its URL and title for the header (`describeTab`), rejects it early via `isRestrictedTabUrl`, then calls `browser.scripting.executeScript` with `readOpenGraphFromDocument`.
 2. `readOpenGraphFromDocument` (in `extract-open-graph.ts`) runs **in the page**. It must stay self-contained (no imports, no closed-over bindings) because Chrome serializes the function body. Anything it needs must be declared inside it.
 3. The extractor returns provenance alongside the preview fields: separate og vs twitter image/title/description, `twitter:card`, `theme-color`, and `crawlerInvisibleTags` (present in the live DOM but missing from the HTML source). The hook resolves `image`, `ogImage`, and `twitterImage` against the tab URL (`resolveOgImageUrl`) so relative Next.js `opengraph-image` paths work on localhost, and exposes a `PreviewState` union: `loading | restricted | error | ready`.
-4. `app.tsx` switches on that union; `preview-tabs.tsx` tracks broken image URLs (one `<img onError>` failure marks that URL broken, not every card), runs `evaluateChecks`, and fans props out to `platform-previews.tsx`. The tab strip (Image, X, Facebook, LinkedIn, Slack, Discord, WhatsApp, Reddit, Tags) scrolls horizontally via `Tabs.ListContainer`.
+4. `app.tsx` switches on that union and renders `popup-header.tsx` in every state; `preview-tabs.tsx` tracks broken image URLs (one `<img onError>` failure marks that URL broken, not every card), runs `evaluateChecks`, and fans props out to `platform-previews.tsx`. The tab strip (Image, X, Facebook, LinkedIn, Slack, Discord, WhatsApp, Reddit) sits in `Tabs.ListContainer`; each tab's issue dot comes from `check-platforms.ts`. Checks and Raw tags render below the panel on every tab.
 
-`platform-previews.tsx` holds one component per surface (og:image, X, Facebook, LinkedIn, Slack, Discord, WhatsApp, Reddit). These deliberately hardcode each platform's brand colours and card geometry as literal Tailwind values rather than theme tokens; they are pixel imitations of third-party UI, not app chrome. **Discord's left bar is the exception:** it uses the page `theme-color` (falling back to `#202225`) because Discord does. `preview-image.tsx` centralises the missing/broken image empty states.
+`platform-previews.tsx` holds one component per surface (og:image, X, Facebook, LinkedIn, Slack, Discord, WhatsApp, Reddit). These deliberately hardcode each platform's brand colours and card geometry as literal Tailwind values rather than theme tokens; they are pixel imitations of third-party UI, not app chrome. **Discord's left bar is the exception:** it uses the page `theme-color` (falling back to `#202225`) because Discord does. `preview-image.tsx` centralises the missing/broken image empty states. In `preview-tabs.tsx` each card renders inside a light-scoped wrapper (`className="light" data-theme="light"`; Discord's is dark) so cards never invert with the popup's dark mode, and the wrapper caps the card at the platform's approximate width (`widthClassName` in `PLATFORM_TABS`). Change `platform-previews.tsx` only to match a platform, never to restyle.
 
 Permissions are `activeTab` + `scripting` only (`wxt.config.ts`). Do not add host permissions or a content script without a reason; the store listing and `PRIVACY.md` claim no data collection and no persistent page access.
 
@@ -42,13 +42,16 @@ The extractor's pure helpers (`resolveOgImageUrl`, `isRestrictedTabUrl`, `displa
 Biome is authoritative: use two-space indentation, double quotes, and organized imports. Prefer small typed functions and React function components. Name component files in kebab case (`preview-image.tsx`), components and types in PascalCase, hooks with a `use` prefix, and other functions in camelCase. Keep `readOpenGraphFromDocument` self-contained because the browser serializes it for script injection.
 
 - Relative imports carry explicit extensions (`./app.tsx`, `./extract-open-graph.ts`); `allowImportingTsExtensions` is on.
-- UI comes from `@heroui/react` and `@heroui-pro/react` (v3 compound components: `EmptyState.Header`, `Tabs.Panel`). Pro CSS is imported per-component in `style.css`.
-- Popup width is fixed at 420px in `style.css`; layouts must work at that width.
+- UI comes from `@heroui/react` and `@heroui-pro/react` (v3 compound components: `EmptyState.Header`, `Tabs.Panel`). Pro CSS comes from the single documented `@import "@heroui-pro/react/css"` in `style.css`, after `@heroui/styles`; it is already in `@layer components`, so do not import per-component files.
+- Build chrome from HeroUI OSS/Pro components first; hand-roll markup only where no component fits (the dotted stage, the header glow).
+- Popup width is fixed at 800px (Chrome's popup maximum) in `style.css`; height is capped at 600px by the browser and the popup scrolls past it.
+- Dark mode follows the OS: `main.tsx` sets `.dark`/`data-theme` on `<html>`, and `style.css` defines light, first-paint `prefers-color-scheme`, and `.dark` token blocks. Chrome text never goes below 13px; motion has a `prefers-reduced-motion` fallback.
+- Icons are bundled offline: add any new icon name to `ICON_NAMES` in `vite-icon-subset.ts`, or `@iconify/react` falls back to fetching it from the network.
 - Brand colour is indigo. The popup's HeroUI `--accent` is `#5e4df2` in `style.css`, one step darker than the icon's `#6d5bff` so text and focus rings clear WCAG AA on the popup greys. Icons and `marketing/` artwork use the `#6d5bff` → `#3b2fd9` gradient on a `#0d0a1f` background. Brand colour is for app chrome only; never use it inside platform cards.
 
 ## Testing Guidelines
 
-Use Vitest with `describe`, `it`, and `expect`. Name test files `*.test.ts` or `*.test.tsx` and co-locate them with the implementation. Unit tests belong on the pure helpers in `extract-open-graph.ts` and `evaluate-checks.ts` (URL normalization, restricted pages, missing metadata, check messages). There is no coverage threshold. Do not require component tests for platform preview cards or popup chrome; those are reviewed visually.
+Use Vitest with `describe`, `it`, and `expect`. Name test files `*.test.ts` or `*.test.tsx` and co-locate them with the implementation. Unit tests belong on the pure helpers in `extract-open-graph.ts` (including `describeTab`), `evaluate-checks.ts` (including `splitCheckMessage` and `fallbackNote`) and `check-platforms.ts` (the check-id to platform map behind the tab issue dots): URL normalization, restricted pages, missing metadata, check messages, platform mapping. There is no coverage threshold. Do not require component tests for platform preview cards or popup chrome; those are reviewed visually.
 
 ## Commit & Pull Request Guidelines
 
@@ -63,7 +66,7 @@ Codex: post only findings that would ship a wrong card, drop tags, leak data, or
 - Formatting, imports, naming taste, comment density, extra abstractions, or anything Biome/`pnpm check` already covers.
 - Unused helpers, types, or missing UI on a stacked PR. Later PRs in the same stack are allowed to wire them up.
 - Missing tests for `platform-previews.tsx`, `preview-tabs.tsx`, or other React chrome. Tests are for extract/check helpers only.
-- Horizontal scrolling of the tab strip at 420px. That layout is intentional.
+- Horizontal scrolling of the tab strip. That layout is intentional.
 - Hardcoded third-party colours, type, or crops inside platform cards. Fidelity beats taste; HeroUI tokens must not leak into those cards.
 - Discord using `og:image` only (no `twitter:image` fallback). That matches Discord.
 - Hypothetical timeouts, 403/405 HEAD bodies, mid-load layout shifts, or other speculative edge cases unless they already break the common path.

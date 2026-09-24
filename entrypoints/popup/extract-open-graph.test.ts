@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  describeTab,
   displayHostname,
   isRestrictedTabUrl,
   resolveOgImageUrl,
@@ -87,5 +88,42 @@ describe("withCacheBuster", () => {
       "data:image/png;base64,AAAA",
     );
     expect(withCacheBuster("", "abc")).toBe("");
+  });
+});
+
+describe("describeTab", () => {
+  it("should split a web URL into host and path", () => {
+    expect(describeTab("https://www.acme.dev/blog/a?x=1", "Acme")).toEqual({
+      primary: "acme.dev",
+      secondary: "/blog/a?x=1",
+    });
+  });
+
+  it("should keep localhost as the host", () => {
+    expect(describeTab("http://localhost:3000/", "")).toEqual({
+      primary: "localhost",
+      secondary: "/",
+    });
+  });
+
+  it("should use the tab title for browser pages", () => {
+    expect(describeTab("chrome://extensions/", "Extensions")).toEqual({
+      primary: "Extensions",
+      secondary: "chrome://extensions/",
+    });
+  });
+
+  it("should fall back to the URL when there is no title", () => {
+    expect(describeTab("file:///tmp/a.html", "")).toEqual({
+      primary: "file:///tmp/a.html",
+      secondary: "",
+    });
+  });
+
+  it("should say so when there is no URL or title", () => {
+    expect(describeTab("", "")).toEqual({
+      primary: "No page URL",
+      secondary: "",
+    });
   });
 });

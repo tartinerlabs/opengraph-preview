@@ -1,7 +1,32 @@
 import type { OpenGraphTags } from "./extract-open-graph.ts";
 
+export const CHECK_IDS = [
+  "missing-og-title",
+  "missing-og-description",
+  "missing-og-image",
+  "title-length",
+  "description-length",
+  "twitter-card",
+  "relative-image",
+  "http-image",
+  "image-broken",
+  "twitter-image-broken",
+  "crawler-invisible",
+  "image-format",
+  "multiple-og-image",
+  "og-url-relative",
+  "og-url-canonical",
+  "missing-image-alt",
+  "image-dimension-mismatch",
+  "image-too-small",
+  "image-aspect",
+  "image-file-size",
+] as const;
+
+export type CheckId = (typeof CHECK_IDS)[number];
+
 export type Check = {
-  id: string;
+  id: CheckId;
   message: string;
 };
 
@@ -14,7 +39,7 @@ export type ImageMeta = {
 const TARGET_ASPECT = 1.91;
 const ASPECT_TOLERANCE = 0.2;
 const MIN_IMAGE_PX = 200;
-const FACEBOOK_MAX_BYTES = 8 * 1024 * 1024;
+export const FACEBOOK_MAX_BYTES = 8 * 1024 * 1024;
 const WHATSAPP_MAX_BYTES = 600 * 1024;
 // X card markup docs: twitter:title max 70, twitter:description max 200.
 const X_TITLE_MAX_CHARS = 70;
@@ -299,6 +324,62 @@ export function evaluateChecks(
   }
 
   return checks;
+}
+
+/** Splits a check message at its first sentence: the lead states the fault, the detail explains it. */
+export function splitCheckMessage(message: string): {
+  detail: string;
+  lead: string;
+} {
+  const index = message.indexOf(". ");
+  if (index === -1) {
+    return { detail: "", lead: message };
+  }
+  return {
+    detail: message.slice(index + 2),
+    lead: message.slice(0, index + 1),
+  };
+}
+
+/**
+ * What previews draw instead of a tag that is not set. Only fallbacks the
+ * checks above and the platform cards already encode; null when none applies.
+ */
+export function fallbackNote(tag: string, tags: OpenGraphTags): string | null {
+  switch (tag) {
+    case "og:title":
+      if (tags.twitterTitle) {
+        return "Previews use twitter:title.";
+      }
+      return tags.title ? "Previews use the document title." : null;
+    case "og:description":
+      if (tags.twitterDescription) {
+        return "Previews use twitter:description.";
+      }
+      return tags.description ? "Previews use the meta description." : null;
+    case "og:image":
+      return tags.twitterImageRaw
+        ? "Previews use twitter:image. Discord ignores twitter:image."
+        : null;
+    case "twitter:card":
+      return "X draws a small summary card.";
+    case "twitter:title":
+      if (tags.ogTitle) {
+        return "X uses og:title.";
+      }
+      return tags.title ? "X uses the document title." : null;
+    case "twitter:description":
+      if (tags.ogDescription) {
+        return "X uses og:description.";
+      }
+      return tags.description ? "X uses the meta description." : null;
+    case "twitter:image":
+      return tags.ogImageRaw ? "X uses og:image." : null;
+    case "theme-color":
+      return "Discord uses #202225.";
+    default:
+      return null;
+  }
 }
 
 function countCharacters(value: string): number {

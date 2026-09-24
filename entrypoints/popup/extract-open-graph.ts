@@ -95,6 +95,29 @@ export function displayHostname(url: string): string {
   }
 }
 
+/** Header identity from the active tab: host and path for web pages, else the tab title. */
+export function describeTab(
+  url: string,
+  title: string,
+): { primary: string; secondary: string } {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return {
+        primary: parsed.hostname.replace(/^www\./i, ""),
+        secondary: `${parsed.pathname}${parsed.search}`,
+      };
+    }
+  } catch {
+    // Not a parseable URL: fall through to the title.
+  }
+  const name = title.trim();
+  if (name) {
+    return { primary: name, secondary: url };
+  }
+  return { primary: url || "No page URL", secondary: "" };
+}
+
 /**
  * Injected via scripting.executeScript. Must stay self-contained (no imports
  * or closed-over bindings) so Chrome can serialize the function body.

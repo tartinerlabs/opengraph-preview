@@ -1,20 +1,243 @@
 @import "tailwindcss";
 @import "@heroui/styles";
-@import "@heroui-pro/react/css/components/empty-state.css";
+@import "@heroui-pro/react/css";
 
-/* HeroUI's stock --muted (oklch(0.5517 …), #71717a) measures 4.43:1 on Paper and
-   4.20:1 on Frame Grey — under AA for the empty-state body copy it carries.
-   Darkened to clear 4.5:1 on both: 4.76:1 on Paper, 4.51:1 on Frame Grey.
-   --accent is the brand indigo from the icon, one step darker than the icon's
-   #6d5bff (4.16:1 on Paper) so it clears AA: 5.04:1 on Paper, 4.61:1 on
-   Frame Grey, and 5.50:1 for white text on the accent. */
-:root {
+/* Tokens. HeroUI declares its tokens inside @layer base; these overrides are
+   unlayered so they win, and they are ordered light -> prefers-color-scheme
+   fallback -> .dark so the light values are never pinned in dark mode.
+   Re-measure muted over the header glow whenever --glow-a/--glow-b alphas
+   change. */
+:root,
+.light,
+[data-theme="light"] {
+  color-scheme: light;
+  --background: oklch(0.982 0.005 285);
+  --foreground: oklch(0.22 0.02 285);
+  --surface: oklch(1 0 0);
+  /* --surface-secondary is not overridden in light: OgImagePreview's
+     letterbox uses it, so the card stays identical. */
+  --muted: oklch(0.47 0.02 285);
+  --border: oklch(0.905 0.01 285);
+  --separator: oklch(0.905 0.01 285);
+  --default: oklch(0.945 0.009 285);
+  --segment: oklch(1 0 0);
+  /* Brand indigo from the icon, one step darker than the icon's #6d5bff so it
+     clears AA: 5.04:1 on Paper and 5.50:1 for white text on the accent. */
   --accent: #5e4df2;
-  --muted: oklch(0.535 0.0138 285.94);
+  --accent-foreground: oklch(1 0 0);
+  --accent-soft: oklch(0.945 0.035 282);
+  --accent-soft-foreground: oklch(0.45 0.2 282);
+  --warning: oklch(0.62 0.16 58);
+  --warning-soft: oklch(0.955 0.045 80);
+  --warning-soft-foreground: oklch(0.47 0.12 55);
+  --success-soft: oklch(0.95 0.04 155);
+  --success-soft-foreground: oklch(0.44 0.11 155);
+  --stage: oklch(0.956 0.008 285);
+  --stage-dot: oklch(0.88 0.012 285);
+  --note: color-mix(in oklab, var(--accent-soft) 70%, transparent);
+  --glow-a: oklch(0.78 0.14 282 / 0.4);
+  --glow-b: oklch(0.84 0.11 340 / 0.3);
+  --shadow-card:
+    0 0 0 1px var(--border), 0 1px 2px oklch(0.3 0.03 285 / 0.05),
+    0 6px 16px -8px oklch(0.3 0.05 285 / 0.12);
+  --shadow-pill:
+    0 0 0 1px oklch(0.3 0.03 285 / 0.06), 0 1px 2px oklch(0.3 0.03 285 / 0.08),
+    0 2px 6px -2px oklch(0.3 0.05 285 / 0.12);
+  /* HeroUI Card, ItemCard and ItemCardGroup draw var(--surface-shadow). */
+  --surface-shadow: var(--shadow-card);
+}
+
+/* First paint, before main.tsx sets .dark on <html>. Same values as below. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: oklch(0.165 0.012 285);
+    --foreground: oklch(0.965 0.005 285);
+    --surface: oklch(0.215 0.014 285);
+    --surface-secondary: oklch(0.245 0.014 285);
+    --muted: oklch(0.73 0.018 285);
+    --border: oklch(1 0 0 / 0.09);
+    --separator: oklch(1 0 0 / 0.09);
+    --default: oklch(0.27 0.014 285);
+    --segment: oklch(0.3 0.014 285);
+    --accent: oklch(0.73 0.15 282);
+    --accent-foreground: oklch(0.17 0.03 282);
+    --accent-soft: oklch(0.3 0.07 282);
+    --accent-soft-foreground: oklch(0.86 0.08 282);
+    --warning: oklch(0.8 0.14 75);
+    --warning-soft: oklch(0.3 0.06 70);
+    --warning-soft-foreground: oklch(0.88 0.11 80);
+    --success-soft: oklch(0.29 0.05 155);
+    --success-soft-foreground: oklch(0.86 0.1 155);
+    --stage: oklch(0.13 0.01 285);
+    --stage-dot: oklch(0.26 0.014 285);
+    --note: color-mix(in oklab, var(--accent-soft) 45%, var(--background));
+    --glow-a: oklch(0.55 0.18 282 / 0.32);
+    --glow-b: oklch(0.55 0.16 340 / 0.18);
+    --shadow-card: 0 0 0 1px var(--border), inset 0 1px 0 oklch(1 0 0 / 0.04);
+    --shadow-pill:
+      0 0 0 1px oklch(1 0 0 / 0.1), inset 0 1px 0 oklch(1 0 0 / 0.06);
+    /* HeroUI Card, ItemCard and ItemCardGroup draw var(--surface-shadow). */
+    --surface-shadow: var(--shadow-card);
+  }
+}
+
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --background: oklch(0.165 0.012 285);
+  --foreground: oklch(0.965 0.005 285);
+  --surface: oklch(0.215 0.014 285);
+  --surface-secondary: oklch(0.245 0.014 285);
+  --muted: oklch(0.73 0.018 285);
+  --border: oklch(1 0 0 / 0.09);
+  --separator: oklch(1 0 0 / 0.09);
+  --default: oklch(0.27 0.014 285);
+  --segment: oklch(0.3 0.014 285);
+  --accent: oklch(0.73 0.15 282);
+  --accent-foreground: oklch(0.17 0.03 282);
+  --accent-soft: oklch(0.3 0.07 282);
+  --accent-soft-foreground: oklch(0.86 0.08 282);
+  --warning: oklch(0.8 0.14 75);
+  --warning-soft: oklch(0.3 0.06 70);
+  --warning-soft-foreground: oklch(0.88 0.11 80);
+  --success-soft: oklch(0.29 0.05 155);
+  --success-soft-foreground: oklch(0.86 0.1 155);
+  --stage: oklch(0.13 0.01 285);
+  --stage-dot: oklch(0.26 0.014 285);
+  --note: color-mix(in oklab, var(--accent-soft) 45%, var(--background));
+  --glow-a: oklch(0.55 0.18 282 / 0.32);
+  --glow-b: oklch(0.55 0.16 340 / 0.18);
+  --shadow-card: 0 0 0 1px var(--border), inset 0 1px 0 oklch(1 0 0 / 0.04);
+  --shadow-pill:
+    0 0 0 1px oklch(1 0 0 / 0.1), inset 0 1px 0 oklch(1 0 0 / 0.06);
+  /* HeroUI Card, ItemCard and ItemCardGroup draw var(--surface-shadow). */
+  --surface-shadow: var(--shadow-card);
+}
+
+/* Platform cards render inside a light-scoped wrapper in both schemes. */
+[data-theme="light"] {
+  color: var(--foreground);
+}
+
+/* HeroUI's styling guide puts BEM overrides in @layer components. They come
+   after @heroui/styles and @heroui-pro/react/css, so they win within the
+   layer, and Tailwind utilities passed as className still beat them. The
+   custom classes below (glow, stage) live here for the same reason. */
+@layer components {
+  /* HeroUI Chip ships text-xs (12px); 13px is the chrome floor. */
+  .chip,
+  .chip--sm,
+  .chip--md {
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+  }
+
+  /* HeroUI Pro's EmptyState at size sm ships a 14px title and a 12px
+     description. Raised to Title 16/20 and Body 14/20; 13px is the chrome
+     floor. */
+  .empty-state--sm .empty-state__title {
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+
+  .empty-state--sm .empty-state__description {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    text-wrap: balance;
+  }
+
+  /* 13px floor: Pro ItemCard/ItemCardGroup descriptions and the OSS Table
+     column header ship text-xs (12px). */
+  .item-card__description,
+  .item-card-group__description {
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+  }
+
+  .table__column {
+    font-size: 0.8125rem;
+  }
+
+  /* HeroUI Tooltip ships text-xs (12px). */
+  .tooltip {
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+  }
+
+  /* Tab strip: HeroUI's Tabs.ListContainer wraps the list in its own
+     ScrollShadow (64px fade, set inline) plus scroll chevrons. A 64px fade eats
+     most of a 13px tab, so shorten it, and give the chevrons a 24px target. */
+  .tab-track .tabs__list-container__scroller {
+    /* biome-ignore lint/complexity/noImportantStyles: ScrollShadow sets the size as an inline style */
+    --scroll-shadow-size: 28px !important;
+    /* Arrow-key focus scrolls the tab clear of the fade and the chevron. */
+    scroll-padding-inline: 2rem;
+  }
+
+  .tab-track > .tabs__list-container__scroll-prev,
+  .tab-track > .tabs__list-container__scroll-next {
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: var(--segment);
+    box-shadow: var(--shadow-pill);
+  }
+
+  /* Check messages wrap; ItemCard truncates by default. */
+  .item-card__title,
+  .item-card__description {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    width: auto;
+  }
+
+  /* TextShimmer's resting colour is currentColor at 45% alpha, under 4.5:1.
+     Rest on muted (6.5:1) and sweep to foreground instead. */
+  .status-shimmer.text-shimmer {
+    --_bg: var(--muted);
+    --_fg: var(--foreground);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* HeroUI Skeleton has no reduced-motion handling. */
+    .skeleton,
+    .skeleton::before,
+    .skeleton::after {
+      animation: none;
+    }
+
+    /* TextShimmer's reduced-motion rule drops to 60% opacity; keep AA. */
+    .status-shimmer.text-shimmer {
+      color: var(--muted);
+      opacity: 1;
+    }
+  }
+  .popup-glow {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 190px;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(70% 90% at 12% -20%, var(--glow-a), transparent 70%),
+      radial-gradient(60% 80% at 100% -10%, var(--glow-b), transparent 70%);
+    mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  }
+
+  .stage {
+    background-color: var(--stage);
+    background-image: radial-gradient(var(--stage-dot) 1px, transparent 1.2px);
+    background-size: 12px 12px;
+    background-position: 6px 6px;
+    box-shadow:
+      inset 0 0 0 1px var(--border),
+      inset 0 1px 3px oklch(0.2 0.02 285 / 0.06);
+  }
 }
 
 html,
 body {
-  width: 420px;
+  width: 800px;
   margin: 0;
+  background-color: var(--background);
 }
