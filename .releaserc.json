@@ -5,16 +5,16 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
     [
+      "@semantic-release/github",
+      {
+        "assets": [".output/*-chrome.zip"]
+      }
+    ],
+    [
       "@semantic-release/exec",
       {
         "prepareCmd": "pnpm pkg set version=${nextRelease.version} && pnpm zip",
         "publishCmd": "pnpm wxt submit --chrome-zip .output/*-chrome.zip"
-      }
-    ],
-    [
-      "@semantic-release/github",
-      {
-        "assets": [".output/*-chrome.zip"]
       }
     ],
     [
