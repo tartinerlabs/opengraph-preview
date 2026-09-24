@@ -44,6 +44,7 @@ Biome is authoritative: use two-space indentation, double quotes, and organized 
 - Relative imports carry explicit extensions (`./app.tsx`, `./extract-open-graph.ts`); `allowImportingTsExtensions` is on.
 - UI comes from `@heroui/react` and `@heroui-pro/react` (v3 compound components: `EmptyState.Header`, `Tabs.Panel`). Pro CSS is imported per-component in `style.css`.
 - Popup width is fixed at 420px in `style.css`; layouts must work at that width.
+- Brand colour is indigo. The popup's HeroUI `--accent` is `#5e4df2` in `style.css`, one step darker than the icon's `#6d5bff` so text and focus rings clear WCAG AA on the popup greys. Icons and `marketing/` artwork use the `#6d5bff` → `#3b2fd9` gradient on a `#0d0a1f` background. Brand colour is for app chrome only; never use it inside platform cards.
 
 ## Testing Guidelines
 
