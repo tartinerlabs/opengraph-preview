@@ -126,97 +126,98 @@
   color: var(--foreground);
 }
 
-/* HeroUI Chip ships text-xs (12px); 13px is the chrome floor. */
-.chip,
-.chip--sm,
-.chip--md {
-  font-size: 0.8125rem;
-  line-height: 1.25rem;
-}
-
-/* HeroUI Pro's EmptyState at size sm ships a 14px title and a 12px
-   description. Raised to Title 16/20 and Body 14/20; 13px is the chrome
-   floor. */
-.empty-state--sm .empty-state__title {
-  font-size: 1rem;
-  line-height: 1.25rem;
-}
-
-.empty-state--sm .empty-state__description {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  text-wrap: balance;
-}
-
-/* 13px floor: Pro ItemCard/ItemCardGroup descriptions and the OSS Table
-   column header ship text-xs (12px). */
-.item-card__description,
-.item-card-group__description {
-  font-size: 0.8125rem;
-  line-height: 1.125rem;
-}
-
-.table__column {
-  font-size: 0.8125rem;
-}
-
-/* HeroUI Tooltip ships text-xs (12px). */
-.tooltip {
-  font-size: 0.8125rem;
-  line-height: 1.125rem;
-}
-
-/* Tab strip: HeroUI's Tabs.ListContainer wraps the list in its own
-   ScrollShadow (64px fade, set inline) plus scroll chevrons. A 64px fade eats
-   most of a 13px tab, so shorten it, and give the chevrons a 24px target. */
-.tab-track .tabs__list-container__scroller {
-  /* biome-ignore lint/complexity/noImportantStyles: ScrollShadow sets the size as an inline style */
-  --scroll-shadow-size: 28px !important;
-  /* Arrow-key focus scrolls the tab clear of the fade and the chevron. */
-  scroll-padding-inline: 2rem;
-}
-
-.tab-track > .tabs__list-container__scroll-prev,
-.tab-track > .tabs__list-container__scroll-next {
-  width: 1.5rem;
-  height: 1.5rem;
-  background-color: var(--segment);
-  box-shadow: var(--shadow-pill);
-}
-
-/* Check messages wrap; ItemCard truncates by default. */
-.item-card__title,
-.item-card__description {
-  white-space: normal;
-  overflow-wrap: anywhere;
-  width: auto;
-}
-
-/* TextShimmer's resting colour is currentColor at 45% alpha, under 4.5:1.
-   Rest on muted (6.5:1) and sweep to foreground instead. */
-.status-shimmer.text-shimmer {
-  --_bg: var(--muted);
-  --_fg: var(--foreground);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  /* HeroUI Skeleton has no reduced-motion handling. */
-  .skeleton,
-  .skeleton::before,
-  .skeleton::after {
-    animation: none;
-  }
-
-  /* TextShimmer's reduced-motion rule drops to 60% opacity; keep AA. */
-  .status-shimmer.text-shimmer {
-    color: var(--muted);
-    opacity: 1;
-  }
-}
-
-/* Components sit in the components layer so Tailwind utilities (rounded-*,
-   sizes) on the same element still win. */
+/* HeroUI's styling guide puts BEM overrides in @layer components. They come
+   after @heroui/styles and the layered Pro imports, so they win within the
+   layer, and Tailwind utilities passed as className still beat them. The
+   custom classes below (glow, app mark, stage) live here for the same reason. */
 @layer components {
+  /* HeroUI Chip ships text-xs (12px); 13px is the chrome floor. */
+  .chip,
+  .chip--sm,
+  .chip--md {
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+  }
+
+  /* HeroUI Pro's EmptyState at size sm ships a 14px title and a 12px
+     description. Raised to Title 16/20 and Body 14/20; 13px is the chrome
+     floor. */
+  .empty-state--sm .empty-state__title {
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+
+  .empty-state--sm .empty-state__description {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    text-wrap: balance;
+  }
+
+  /* 13px floor: Pro ItemCard/ItemCardGroup descriptions and the OSS Table
+     column header ship text-xs (12px). */
+  .item-card__description,
+  .item-card-group__description {
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+  }
+
+  .table__column {
+    font-size: 0.8125rem;
+  }
+
+  /* HeroUI Tooltip ships text-xs (12px). */
+  .tooltip {
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+  }
+
+  /* Tab strip: HeroUI's Tabs.ListContainer wraps the list in its own
+     ScrollShadow (64px fade, set inline) plus scroll chevrons. A 64px fade eats
+     most of a 13px tab, so shorten it, and give the chevrons a 24px target. */
+  .tab-track .tabs__list-container__scroller {
+    /* biome-ignore lint/complexity/noImportantStyles: ScrollShadow sets the size as an inline style */
+    --scroll-shadow-size: 28px !important;
+    /* Arrow-key focus scrolls the tab clear of the fade and the chevron. */
+    scroll-padding-inline: 2rem;
+  }
+
+  .tab-track > .tabs__list-container__scroll-prev,
+  .tab-track > .tabs__list-container__scroll-next {
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: var(--segment);
+    box-shadow: var(--shadow-pill);
+  }
+
+  /* Check messages wrap; ItemCard truncates by default. */
+  .item-card__title,
+  .item-card__description {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    width: auto;
+  }
+
+  /* TextShimmer's resting colour is currentColor at 45% alpha, under 4.5:1.
+     Rest on muted (6.5:1) and sweep to foreground instead. */
+  .status-shimmer.text-shimmer {
+    --_bg: var(--muted);
+    --_fg: var(--foreground);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* HeroUI Skeleton has no reduced-motion handling. */
+    .skeleton,
+    .skeleton::before,
+    .skeleton::after {
+      animation: none;
+    }
+
+    /* TextShimmer's reduced-motion rule drops to 60% opacity; keep AA. */
+    .status-shimmer.text-shimmer {
+      color: var(--muted);
+      opacity: 1;
+    }
+  }
   .popup-glow {
     position: absolute;
     inset: 0 0 auto 0;
