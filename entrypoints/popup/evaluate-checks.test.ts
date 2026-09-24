@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   evaluateChecks,
+  fallbackNote,
   isHttpOnPublicHost,
   isRelativeImageUrl,
+  splitCheckMessage,
 } from "./evaluate-checks.ts";
 import type { OpenGraphTags } from "./extract-open-graph.ts";
 
@@ -533,5 +535,126 @@ describe("evaluateChecks", () => {
         twitterDescription: "a".repeat(201),
       }).map((check) => check.id),
     ).not.toContain("description-length");
+  });
+});
+
+describe("splitCheckMessage", () => {
+  it("should split at the first sentence and keep the period on the lead", () => {
+    expect(
+      splitCheckMessage("og:title is missing. Previews use twitter:title."),
+    ).toEqual({
+      detail: "Previews use twitter:title.",
+      lead: "og:title is missing.",
+    });
+  });
+
+  it("should return an empty detail for a single sentence", () => {
+    expect(
+      splitCheckMessage("The og:image URL did not return an image."),
+    ).toEqual({
+      detail: "",
+      lead: "The og:image URL did not return an image.",
+    });
+  });
+
+  it("should keep a parenthesised URL in the lead", () => {
+    expect(
+      splitCheckMessage(
+        "og:image is a relative URL (/images/og.png). Crawlers will not resolve it.",
+      ),
+    ).toEqual({
+      detail: "Crawlers will not resolve it.",
+      lead: "og:image is a relative URL (/images/og.png).",
+    });
+  });
+
+  it("should not split inside a decimal aspect ratio", () => {
+    expect(
+      splitCheckMessage(
+        "og:image is 1.33:1. Platforms crop toward 1.91:1. Old Reddit square-crops.",
+      ),
+    ).toEqual({
+      detail: "Platforms crop toward 1.91:1. Old Reddit square-crops.",
+      lead: "og:image is 1.33:1.",
+    });
+  });
+});
+
+describe("fallbackNote", () => {
+  const empty: OpenGraphTags = {
+    ...completeTags,
+    description: "",
+    ogDescription: "",
+    ogImageRaw: "",
+    ogTitle: "",
+    title: "",
+    twitterDescription: "",
+    twitterImageRaw: "",
+    twitterTitle: "",
+  };
+
+  it("should name twitter:title, then the document title, for og:title", () => {
+    expect(fallbackNote("og:title", { ...empty, twitterTitle: "T" })).toBe(
+      "Previews use twitter:title.",
+    );
+    expect(fallbackNote("og:title", { ...empty, title: "Doc" })).toBe(
+      "Previews use the document title.",
+    );
+    expect(fallbackNote("og:title", empty)).toBeNull();
+  });
+
+  it("should name twitter:description, then the meta description, for og:description", () => {
+    expect(
+      fallbackNote("og:description", { ...empty, twitterDescription: "D" }),
+    ).toBe("Previews use twitter:description.");
+    expect(fallbackNote("og:description", { ...empty, description: "D" })).toBe(
+      "Previews use the meta description.",
+    );
+    expect(fallbackNote("og:description", empty)).toBeNull();
+  });
+
+  it("should note Discord ignoring twitter:image for og:image", () => {
+    expect(
+      fallbackNote("og:image", {
+        ...empty,
+        twitterImageRaw: "https://a/i.png",
+      }),
+    ).toBe("Previews use twitter:image. Discord ignores twitter:image.");
+    expect(fallbackNote("og:image", empty)).toBeNull();
+  });
+
+  it("should describe the X fallbacks", () => {
+    expect(fallbackNote("twitter:card", empty)).toBe(
+      "X draws a small summary card.",
+    );
+    expect(fallbackNote("twitter:title", { ...empty, ogTitle: "T" })).toBe(
+      "X uses og:title.",
+    );
+    expect(fallbackNote("twitter:title", { ...empty, title: "Doc" })).toBe(
+      "X uses the document title.",
+    );
+    expect(
+      fallbackNote("twitter:description", { ...empty, ogDescription: "D" }),
+    ).toBe("X uses og:description.");
+    expect(
+      fallbackNote("twitter:description", { ...empty, description: "D" }),
+    ).toBe("X uses the meta description.");
+    expect(
+      fallbackNote("twitter:image", {
+        ...empty,
+        ogImageRaw: "https://a/i.png",
+      }),
+    ).toBe("X uses og:image.");
+    expect(fallbackNote("twitter:image", empty)).toBeNull();
+  });
+
+  it("should give Discord's default bar colour for theme-color", () => {
+    expect(fallbackNote("theme-color", empty)).toBe("Discord uses #202225.");
+  });
+
+  it("should return null for tags without a known fallback", () => {
+    expect(fallbackNote("og:url", empty)).toBeNull();
+    expect(fallbackNote("og:site_name", empty)).toBeNull();
+    expect(fallbackNote("og:image:width", empty)).toBeNull();
   });
 });
