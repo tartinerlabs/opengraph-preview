@@ -1,4 +1,4 @@
-import { Avatar, Button, Chip, Skeleton } from "@heroui/react";
+import { Button, Chip, Skeleton } from "@heroui/react";
 import { TextShimmer } from "@heroui-pro/react";
 import { Icon } from "@iconify/react";
 import { describeTab } from "./extract-open-graph.ts";
@@ -85,15 +85,15 @@ export function PopupHeader({
       <div aria-hidden className="popup-glow" />
       <header className="flex items-center gap-2.5 px-3 pt-3.5 pb-2.5">
         <h1 className="sr-only">Open Graph Preview</h1>
-        <Avatar
-          aria-hidden
-          className="app-mark size-8 shrink-0 rounded-[10px]"
-          size="sm"
-        >
-          <Avatar.Fallback className="bg-transparent text-white">
-            <Icon className="size-[17px]" icon="gravity-ui:eye" />
-          </Avatar.Fallback>
-        </Avatar>
+        {/* The extension icon already carries its own tile, so a plain img
+          fits better than an Avatar frame around it. */}
+        <img
+          alt=""
+          className="size-8 shrink-0"
+          height={32}
+          src="/icons/96.png"
+          width={32}
+        />
         <div className="flex min-w-0 flex-1 flex-col">
           {identity ? (
             <>

@@ -13,7 +13,6 @@ export const ICON_NAMES = {
     "circle-xmark",
     "code",
     "copy",
-    "eye",
     "globe",
     "lock",
     "picture",
