@@ -5,15 +5,9 @@
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
     [
-      "@semantic-release/npm",
-      {
-        "npmPublish": false
-      }
-    ],
-    [
       "@semantic-release/exec",
       {
-        "prepareCmd": "pnpm zip",
+        "prepareCmd": "pnpm pkg set version=${nextRelease.version} && pnpm zip",
         "publishCmd": "pnpm wxt submit --chrome-zip .output/*-chrome.zip"
       }
     ],
