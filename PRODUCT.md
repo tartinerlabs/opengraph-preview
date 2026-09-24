@@ -42,24 +42,27 @@ Note the extraction contract this rests on. `og:image` is not the only source �
 title and description, so a page carrying only Twitter tags still previews on
 X, Facebook, LinkedIn, Slack, WhatsApp, and Reddit. Discord reads `og:image`
 only. The Image tab empty state still means **no Open Graph and no Twitter
-image tag**. The Tags tab names the fallback when one was used, and names tags
+image tag**. Checks names the fallback when one was used, and names tags
 present in the live DOM but missing from the HTML source, because crawlers do
 not run JavaScript.
 
 ## Brand Personality
 
-**Precise, honest, quiet.**
+**Precise, honest, quietly crafted.**
 
-An instrument, not a product. It reports what is there, admits what is not, and
-gets out of the way. Voice is flat and specific — "This document has no Open
-Graph or Twitter image tag", not "Oops! Something went wrong." No exclamation
-marks, no encouragement, no personality in the copy. The confidence comes from
-being exactly right about small things.
+An instrument with a finish. The chrome carries a restrained identity: a violet
+app mark, a soft glow behind the header, elevated cards, and a dotted stage
+that presents each platform card as a specimen. None of that competes with the
+card, which is still the subject. Voice is flat and specific: "This document
+has no Open Graph or Twitter image tag", not "Oops! Something went wrong." No
+exclamation marks, no encouragement, no personality in the copy. The
+confidence comes from being exactly right about small things.
 
 ## Anti-references
 
-- **A SaaS landing page in a popup.** No gradient headers, hero metrics,
-  marketing copy, or upsell. It is a 420px tool.
+- **A SaaS landing page in a popup.** No hero metrics, scores, verdict rings,
+  marketing copy, or upsell. The header glow is the one decorative surface;
+  everything else earns its place. It is a 800px tool.
 - **Fake chrome around the previews.** No mock browser window, phone bezel, or
   social-app sidebar drawn around each card. The card is the subject; frames are
   noise that makes the imitation less believable, not more.
@@ -69,7 +72,7 @@ being exactly right about small things.
   choices we would not make — including Slack's `border-left` accent bar,
   Discord's `theme-color` bar on a dark embed, and low-contrast metadata text.
 - **Cramped devtools-panel density.** No 10px text or zero-gutter packing to win
-  space at 420px. Quiet is not the same as small.
+  space at 800px. Quiet is not the same as small.
 
 ## Design Principles
 
@@ -85,21 +88,32 @@ being exactly right about small things.
    name the specific tag or URL at fault and are held to the same craft bar as
    the success path.
 4. **Consulted, not visited.** The popup is read in seconds, so the path to any
-   preview is one deliberate click. The tab strip is that path — Image, the
-   platform cards, and Tags — and is the intended way to choose a surface. The
-   strip scrolls horizontally when the labels overflow 420px; that is still one
+   preview is one deliberate click. The tab strip is that path — Image and the
+   platform cards — and is the intended way to choose a surface. The
+   strip scrolls horizontally when the labels overflow 800px; that is still one
    click, not a second navigation layer. A one-line issue count in the chrome
-   (`3 issues`) selects Tags. What this principle rules out is a *second* layer
+   (`3 issues`) jumps to the checks. The tags themselves are never behind a
+   click: Checks and Raw tags sit below the preview on every tab. What this
+   principle rules out is a *second* layer
    of interaction: disclosures, accordions, hover-only content, "show more", or
    wrapping the tabs onto two rows. Within a selected tab, everything is
-   visible at once.
-5. **The 420px width is the design, not a constraint.** Layouts are composed for
+   visible at once, the tag report included.
+5. **The 800px width is the design, not a constraint.** Layouts are composed for
    that width rather than squeezed into it.
+6. **Branded but restrained chrome.** The chrome may be beautiful: tokens,
+   shadows, a violet accent, platform glyphs in the tab strip. It must never
+   restyle a card, invert a card in dark mode, or pull colour into a card.
+7. **No verdicts.** The popup names issues by tag and quotes each check
+   message as written. It does not score the page, rank severity, or rewrite a
+   check per platform. Every check is an issue of the same kind today, so the
+   UI says "issues", not "warnings" or "critical".
 
 ## Accessibility & Inclusion
 
 WCAG 2.2 AA for all **app chrome** — tabs, empty states, controls, focus order,
 focus visibility, and `prefers-reduced-motion` alternatives for any animation.
+Chrome text is never under 13px, and contrast is measured over what actually
+sits behind the text, including the header glow (see DESIGN.md).
 
 **The platform preview cards are explicitly exempt.** They replicate third-party
 contrast values, including where those values fail AA (for example X's `#8b98a5`

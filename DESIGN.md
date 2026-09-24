@@ -1,24 +1,29 @@
 ---
 name: Open Graph Preview
-description: A 420px browser-extension popup that shows the current tab's og:image, its social cards, and the tags that produced them.
+description: A 800px browser-extension popup that shows the current tab's og:image, its social cards, and the tags that produced them.
 colors:
-  background: "oklch(0.9702 0 0)"
-  foreground: "oklch(0.2103 0.0059 285.89)"
-  surface: "oklch(100% 0 0)"
-  surface-secondary: "oklch(0.9524 0.0013 286.37)"
-  muted: "oklch(0.535 0.0138 285.94)"
-  border: "oklch(90% 0.004 286.32)"
-  accent: "oklch(0.6204 0.195 253.83)"
-  danger: "oklch(0.6532 0.2328 25.74)"
-  background-dark: "oklch(12% 0.005 285.823)"
-  foreground-dark: "oklch(0.9911 0 0)"
-  surface-secondary-dark: "oklch(0.257 0.0037 286.14)"
-  muted-dark: "oklch(70.5% 0.015 286.067)"
-  border-dark: "oklch(28% 0.006 286.033)"
+  background: "oklch(0.982 0.005 285)"
+  foreground: "oklch(0.22 0.02 285)"
+  surface: "oklch(1 0 0)"
+  muted: "oklch(0.47 0.02 285)"
+  border: "oklch(0.905 0.01 285)"
+  default: "oklch(0.945 0.009 285)"
+  accent: "oklch(0.54 0.21 282)"
+  accent-soft: "oklch(0.945 0.035 282)"
+  warning: "oklch(0.62 0.16 58)"
+  warning-soft: "oklch(0.955 0.045 80)"
+  success-soft: "oklch(0.95 0.04 155)"
+  stage: "oklch(0.956 0.008 285)"
+  background-dark: "oklch(0.165 0.012 285)"
+  foreground-dark: "oklch(0.965 0.005 285)"
+  surface-dark: "oklch(0.215 0.014 285)"
+  muted-dark: "oklch(0.73 0.018 285)"
+  accent-dark: "oklch(0.73 0.15 282)"
+  stage-dark: "oklch(0.13 0.01 285)"
 typography:
-  title:
+  heading:
     fontFamily: "ui-sans-serif, system-ui, sans-serif"
-    fontSize: "16px"
+    fontSize: "15px"
     fontWeight: 600
     lineHeight: "20px"
   body:
@@ -26,389 +31,343 @@ typography:
     fontSize: "14px"
     fontWeight: 400
     lineHeight: "20px"
-  label:
+  meta:
     fontFamily: "ui-sans-serif, system-ui, sans-serif"
     fontSize: "13px"
     fontWeight: 400
-    lineHeight: "16px"
+    lineHeight: "18px"
+  mono:
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontSize: "13px"
+    lineHeight: "18px"
 rounded:
-  field: "0.75rem"
-  md: "0.5rem"
-  lg: "1rem"
+  stage: "1.5rem"
+  card: "1rem"
+  pill: "9999px"
 spacing:
   gutter: "12px"
-  gap: "8px"
-  panel-top: "8px"
-components:
-  preview-frame:
-    backgroundColor: "{colors.surface-secondary}"
-    rounded: "{rounded.lg}"
-    width: "396px"
-  popup-shell:
-    backgroundColor: "{colors.background}"
-    textColor: "{colors.foreground}"
-    padding: "12px"
-    width: "420px"
-  empty-state:
-    backgroundColor: "{colors.background}"
-    textColor: "{colors.muted}"
-    padding: "12px"
+  stage-padding: "8px"
+  section-gap: "16px"
 ---
 
 # Design System: Open Graph Preview
 
-## Overview
+## Direction
 
-**Creative North Star: "The Contact Sheet"**
+**Soft Modern surface on a Refined Instrument layout.**
 
-A photographer's contact sheet exists to let you judge frames. The sheet itself is
-a neutral field, printed edge to edge, with no styling of its own — because
-anything the sheet does visually is a thing you might mistake for something in
-the frame. This popup works the same way. The platform cards are the frames.
-The chrome around them is the sheet — including the Tags tab, which is a
-report on the frames, not a frame itself.
+The popup is still an instrument: you open it, look at a card, and decide
+whether to ship. What changed is the finish. The chrome now has a quiet
+identity (a violet app mark and a soft glow behind the header), elevated
+surfaces with real shadows, a pill tab track with issue dots, and a dotted
+**stage** that presents each platform card as a specimen.
 
-That single idea resolves nearly every visual decision here. The chrome is
-colourless because the cards are full of other companies' brand colour, and the
-only way that colour reads as *theirs* is if none of it is ours. The chrome is
-flat because a shadow under a card would say the card is floating in a feed, when
-in fact it is a specimen pinned to a field. The type scale is short and the
-weights are few because the user is not reading the interface — they are looking
-past it, at an image, deciding whether to ship.
+One expressive surface, the header glow, and everything else stays calm. The
+platform card is still the subject: the stage frames it, it never restyles it.
 
-The result should feel like an instrument someone left on the desk: unbranded,
-uncomplaining, correct. Its confidence comes from being exactly right about small
-things — a 1.91:1 aspect ratio that matches what the platform actually crops to,
-a hostname rendered in the platform's real metadata grey — and never from
-presentation.
+## Two systems, one border
 
-**Key Characteristics:**
+- **Chrome** (header, tab track, stage, Checks, Raw tags, notes, empty
+  states) is built from HeroUI components and HeroUI tokens only.
+- **Platform cards** (`platform-previews.tsx`) are transcriptions of third-party
+  UI with hardcoded hex, type and radii. They are never restyled. Chrome may
+  only stage them from outside.
+- **Cards never invert.** Each card renders inside
+  `<div className="light" data-theme="light">`, which re-declares the light
+  tokens for that subtree, so `PreviewImage` empty states and the Image tab
+  letterbox stay light in dark mode. Discord is the exception: its embed is
+  dark, so its wrapper is `className="dark" data-theme="dark"` and the empty
+  state inside it reads on the dark card in both themes. Discord keeps its
+  `theme-color` left bar (fallback `#202225`). The Image tab wrapper adds a
+  1px `--border` ring so its light empty state has an edge on the stage.
+- The two systems never share a value: a literal hex in the chrome is a bug, a
+  theme token inside a card is a bug. Discord's `theme-color` bar is the one
+  exception, because Discord draws it.
 
-- Two visual systems with a hard border: neutral chrome, verbatim platform cards
-- Flat by default; depth is tonal, never cast
-- Colour appears almost exclusively inside the previews
-- One click to a platform, never two; the popup is read in seconds
-- Composed for 420px, not squeezed into it
+## Colour
 
-## Colors
+Hue 285 neutrals with a hue 282 violet accent. Every value overrides a HeroUI
+token name, so HeroUI components follow it. The overrides in
+`entrypoints/popup/style.css` are unlayered and ordered **light**, then a
+**`prefers-color-scheme: dark` first-paint fallback** on `:root`, then
+**`.dark`**, so a light value is never pinned in dark mode.
 
-A deliberately colourless chrome — HeroUI's near-neutral gray-violet ramp,
-carrying about 0.001–0.014 chroma — wrapped around previews that supply all the
-real colour on screen.
+| Token | Light | Dark | Role |
+|---|---|---|---|
+| `--background` | `oklch(0.982 0.005 285)` | `oklch(0.165 0.012 285)` | Popup field |
+| `--foreground` | `oklch(0.22 0.02 285)` | `oklch(0.965 0.005 285)` | Primary text |
+| `--surface` | `oklch(1 0 0)` | `oklch(0.215 0.014 285)` | Cards (Checks, Raw tags, empty states) |
+| `--surface-secondary` | HeroUI default | `oklch(0.245 0.014 285)` | Light value left alone: the Image tab letterbox uses it |
+| `--muted` | `oklch(0.47 0.02 285)` | `oklch(0.73 0.018 285)` | Secondary text |
+| `--border`, `--separator` | `oklch(0.905 0.01 285)` | `oklch(1 0 0 / 0.09)` | Hairlines and rings |
+| `--default` | `oklch(0.945 0.009 285)` | `oklch(0.27 0.014 285)` | Inline code, skeletons, hover fills |
+| `--segment` | `oklch(1 0 0)` | `oklch(0.3 0.014 285)` | Selected tab pill |
+| `--accent` | `oklch(0.54 0.21 282)` | `oklch(0.73 0.15 282)` | Focus ring |
+| `--accent-soft` / `-foreground` | `0.945 0.035` / `0.45 0.2` | `0.3 0.07` / `0.86 0.08` | Copied state, cache note, restricted icon |
+| `--warning` | `oklch(0.62 0.16 58)` | `oklch(0.8 0.14 75)` | Tab issue dots |
+| `--warning-soft` / `-foreground` | `0.955 0.045 80` / `0.47 0.12 55` | `0.3 0.06 70` / `0.88 0.11 80` | Issue pill, check tiles, related-issue icon |
+| `--success-soft` / `-foreground` | `0.95 0.04 155` / `0.44 0.11 155` | `0.29 0.05 155` / `0.86 0.1 155` | Clean state |
+| `--stage` / `--stage-dot` | `0.956 0.008` / `0.88 0.012` | `0.13 0.01` / `0.26 0.014` | Dotted stage behind the card |
+| `--glow-a` / `--glow-b` | violet 0.4 / pink 0.3 alpha | violet 0.32 / pink 0.18 alpha | Header glow |
 
-### Primary
+Colour roles:
 
-- **Signal Blue** (`oklch(0.6204 0.195 253.83)`): the accent, reserved for focus
-  rings. That is currently its only appearance — tab selection is carried by the
-  white pill, not by colour — so in practice the chrome renders with no saturated
-  colour at all until something takes focus. It is the only saturated colour the
-  chrome is *permitted*, and it is not used for emphasis, links, or decoration —
-  see The Borrowed Colour Rule.
+- **Violet accent**: focus rings, the app mark, the copied state, the cache
+  note. Never used for emphasis inside content.
+- **Warning**: issues. The header pill, the check tiles, the tab dots and the
+  related-issue icon. Every check is a warning today, so the UI says "issues"
+  and never prints a severity word.
+- **Success**: the clean state only.
 
-### Neutral
+### Measured contrast (WCAG 2.x)
 
-- **Paper** (`oklch(0.9702 0 0)`): the popup field. A true neutral at chroma 0 —
-  no warm tint, no cool tint. It is backing, not atmosphere.
-- **Eclipse** (`oklch(0.2103 0.0059 285.89)`): all primary text. Near-black with
-  a trace of violet, matching the neutral ramp's hue.
-- **Frame Grey** (`oklch(0.9524 0.0013 286.37)`): the letterbox behind the
-  standalone `og:image`. Sits one step under Paper so a transparent or
-  short-of-frame PNG shows its own edges rather than dissolving into the field.
-- **Muted** (`oklch(0.535 0.0138 285.94)`, `#6c6c75`): secondary and supporting
-  copy, including the empty-state descriptions. Measures **4.76:1** on Paper
-  (`#f5f5f5`) and **4.51:1** on Frame Grey — both clear the 4.5:1 body-text
-  minimum. HeroUI's stock `--muted` is one step lighter
-  (`oklch(0.5517 …)`, `#71717a`) and fails both at 4.43:1 and 4.20:1, so
-  `entrypoints/popup/style.css` overrides the token in `:root`.
-- **Hairline** (`oklch(90% 0.004 286.32)`): borders and separators in the chrome
-  at 1px. Never thicker, never coloured.
+OKLCH converted to sRGB with alpha composited over what sits behind it.
 
-### Status
+| Pair | Light | Dark | Need |
+|---|---|---|---|
+| foreground / background | 16.47 | 17.41 | 4.5 |
+| foreground / surface | 17.36 | 15.84 | 4.5 |
+| muted / background | 6.50 | 8.04 | 4.5 |
+| muted / surface | 6.86 | 7.31 | 4.5 |
+| muted / stage | 6.02 | 8.39 | 4.5 |
+| muted / stage dot (caption over dots, worst) | 4.77 | 6.49 | 4.5 |
+| **muted / glow peak (header path line, worst)** | **4.66** | 5.02 | 4.5 |
+| muted / tab track over glow | 5.80 | 6.31 | 4.5 |
+| foreground / segment (selected tab) | 17.36 | 12.34 | 4.5 |
+| muted / default (chips) | 5.83 | 6.29 | 4.5 |
+| foreground / default (inline code) | 14.76 | 13.63 | 4.5 |
+| warning-soft-foreground / warning-soft | 6.21 | 9.52 | 4.5 |
+| warning-soft-foreground / stage (related icon) | 6.25 | 13.91 | 3 |
+| success-soft-foreground / success-soft | 6.44 | 9.39 | 4.5 |
+| accent-soft-foreground / accent-soft | 6.85 | 8.89 | 4.5 |
+| foreground / note | 15.18 | 15.44 | 4.5 |
+| muted / note | 6.00 | 7.13 | 4.5 |
+| accent focus ring / background | 5.21 | 7.74 | 3 |
+| warning dot / tab track | 3.23 | 7.95 | 3 |
+| warning dot / segment | 3.82 | 7.18 | 3 |
+| light muted / card empty-state backgrounds | 6.11 to 6.86 | light-pinned | 4.5 |
 
-- **Danger** (`oklch(0.6532 0.2328 25.74)`): reserved for genuine failure. A
-  missing `og:image` is *not* a failure — it is the answer to the user's
-  question, and it renders in neutral empty-state colours.
+Borders (1.33 light, 1.29 dark) are decorative; no information relies on them.
 
-### Dark
+**Re-measure muted over the glow whenever `--glow-a` or `--glow-b` alphas
+change.** At the mockup's original alphas (0.45 / 0.38) the header path line
+measured 4.48:1 and failed.
 
-Dark is a first-class mode, not an afterthought: this runs in developer browsers,
-and a 420px sheet of white at night is a flashbang. The chrome inverts to
-**Ink** (`oklch(12% 0.005 285.823)`) on **Snow** (`oklch(0.9911 0 0)`), with
-Muted lifting to `oklch(70.5% 0.015 286.067)` to hold contrast.
+HeroUI Pro's `TextShimmer` rests on `currentColor` at 45% alpha, which is
+under 4.5:1. The header's "Reading tags" shimmer (`.status-shimmer`) rests on
+`--muted` and sweeps to `--foreground` instead, and keeps muted at full opacity
+under reduced motion.
 
-**The Cards Don't Invert Rule.** The platform previews stay in the colours those
-platforms actually render. X, Facebook, LinkedIn, Slack, WhatsApp, and Reddit
-cards stay light for most recipients, so inverting them would show the user a
-card that does not exist. Discord's embed is dark; it stays dark in light
-chrome. The seam between chrome and a card is correct; it is the boundary
-between our surface and someone else's.
+## Type
 
-### Named Rules
+System only: the HeroUI sans stack and Tailwind's `font-mono` (ui-monospace).
 
-**The Borrowed Colour Rule.** Every colour inside a preview card belongs to the
-platform being imitated and is written as a literal hex value, never a theme
-token. Every colour outside a preview card belongs to the chrome and is written
-as a token, never a literal. A literal hex in the chrome is a bug; a token inside
-a card is a bug. The two systems must never resolve to the same source.
+| Role | Size | Used for |
+|---|---|---|
+| Heading | 15/20, 600, -0.012em | Host line, section titles (Checks, Raw tags) |
+| Body | 14/20 | Check lead, empty-state description |
+| Meta | 13/18 | Paths, captions, check detail, notes, chips, tab labels |
+| Mono | 13/18 | Tag names, URLs, numbers, card types, inline code in messages |
 
-**The One Accent Rule.** Signal Blue marks focus and selection. Nothing else.
-Facebook and Slack both use blue inside their cards; if our blue starts meaning
-"important", the user has to work out whose blue they're looking at.
+**13px is the chrome floor.** HeroUI ships 12px in several places, and
+`style.css` raises each one: `Chip`, the Pro `ItemCard` and `ItemCardGroup`
+descriptions, the OSS `Table` column header, and the Pro `EmptyState` `sm`
+title and description (16/20 and 14/20).
 
-## Typography
+Inside the cards the type is transcribed from each platform and is not part of
+this scale.
 
-**Body Font:** the system UI stack (`ui-sans-serif, system-ui, sans-serif`)
-**Card Fonts:** each platform's own stack — Facebook renders in
-`Helvetica, Arial, sans-serif`; the rest use the system sans
+## Elevation
 
-**Character:** unremarkable on purpose. The chrome speaks in the host OS's own
-voice so it reads as part of the browser rather than as a designed artifact. The
-only typographic personality on screen belongs to the platforms.
+- `--shadow-card`: 1px ring plus two soft violet-grey drop shadows in light;
+  ring plus a 4% top highlight in dark. `--surface-shadow` points at it, so
+  HeroUI `Card`, `ItemCard` and `ItemCardGroup` pick it up.
+- `--shadow-pill`: the selected tab pill and the tab scroll chevrons.
+- Stage: an inset ring and a faint inset top shadow, with a 12px dot grid.
+- Platform cards never receive a shadow. They do not use HeroUI `Card`.
 
-### Hierarchy
+## Iconography
 
-- **Title** (600, 16px/20px): empty-state headings — "No og:image", "Restricted
-  page". One line, stated as fact.
-- **Body** (400, 14px/20px): empty-state descriptions and supporting copy.
-- **Label** (400, 13px/16px): tab labels and the smallest chrome text. This is
-  the floor — nothing in the chrome goes under 13px, however tempting at 420px.
+- `gravity-ui` for chrome, `simple-icons` for platform glyphs in the tab strip.
+  All monochrome `currentColor`. The selected tab glyph is foreground, not
+  accent.
+- Bundled offline: `vite-icon-subset.ts` exposes `virtual:icon-subset` with only
+  the icons in `ICON_NAMES`, and `main.tsx` registers them with `addCollection`.
+  The popup never requests `api.iconify.design`. **Adding an icon means adding
+  its name to `ICON_NAMES`.**
+- No favicons in the chrome. The header identity is `tab.url` and `tab.title`.
 
-Inside the cards the scale is not ours: X's title runs 15px/20px, Facebook's
-16px/20px semibold over a 12px uppercase domain, LinkedIn's 14px/20px semibold
-over 12px metadata, Slack's 15px/20px bold, Discord's 16px/20px title over
-12px site name, WhatsApp's 14px/16px title over a 12px domain, Reddit's
-16px/20px title. These are transcriptions and are not part of this hierarchy.
+## HeroUI component map
 
-### Named Rules
+The user builds on both HeroUI OSS (`@heroui/react`, `@heroui/styles`) and
+HeroUI Pro (`@heroui-pro/react`). Chrome is assembled from these first.
 
-**The Transcription Rule.** Type inside a card is measured from the platform, not
-derived from this scale. If a value here and a value there disagree, the platform
-wins and the difference is documented, not reconciled.
+| Chrome element | Component | Package |
+|---|---|---|
+| App mark | `Avatar size="sm"` + `Avatar.Fallback` (no `Avatar.Image`) | OSS |
+| Status: loading | `TextShimmer` | Pro |
+| Status: restricted / error | `Chip variant="soft"` + `Chip.Label` | OSS |
+| Status: ready | `Button size="sm" variant="tertiary"`, tinted through `--button-bg` / `--button-fg` | OSS |
+| Tab strip | `Tabs` (`ListContainer`, `List`, `Tab`, `Indicator`, `Panel`). `ListContainer` already wraps the list in HeroUI's `ScrollShadow` with scroll chevrons | OSS |
+| Tab issue dot | `Badge.Anchor` around the tab icon + `Badge size="sm" color="warning" variant="primary" placement="top-right"` | OSS |
+| Card-type caption | `Chip size="sm" variant="tertiary"` | OSS |
+| "N more in Checks" | `Link` with `onPress` | OSS |
+| Checks | `ItemCardGroup` (`Header`, `Title`, `Description`) + `ItemCard` (`Icon`, `Content`, `Title`, `Description`), `Separator` between rows | Pro + OSS |
+| Raw tags | `Card` (`Header`, `Title`, `Description`, `Content`) holding one `Table variant="secondary"` per group, `Separator` between groups | OSS |
+| Not set marker | `Chip size="sm" variant="tertiary"`, dashed border | OSS |
+| theme-color swatch | `ColorSwatch size="xs" shape="square"`, only when `CSS.supports` and `parseColor` both accept the value | OSS |
+| Copy buttons | `Button isIconOnly variant="ghost"` as the direct child of `Tooltip` (no `Tooltip.Trigger`, which adds an unnamed `role="button"` wrapper), 13px tooltip text | OSS |
+| Cache note | `Alert status="accent"` (`Indicator`, `Content`, `Description`) | OSS |
+| Restricted / error body | `Card` around `EmptyState` | OSS + Pro |
+| Loading | `Skeleton animationType="shimmer"` | OSS |
 
-**The Flat Voice Rule.** Copy states what is true and names the specific thing at
-fault — "This document has no Open Graph or Twitter image tag", not "Oops!"
-No exclamation marks, no apologies, no encouragement. Sentence case throughout;
-the only uppercase on screen is Facebook's domain line, which is theirs.
+Hand-rolled, with reasons:
+
+- **Stage dot grid** and **header glow**: no component draws either.
+- **Host and path lines**: `Typography` has no 15px size and its 12px size is
+  under the floor.
+- **Card light-scope wrapper**: a plain `div`.
+
+HeroUI Pro ships its component CSS unlayered, which would beat every Tailwind
+utility passed as `className`. `style.css` imports it with
+`layer(components)` so Pro components take `className` overrides the same way
+OSS components do.
 
 ## Layout
 
-A single fixed column, 420px wide, locked in `style.css`. This is the design's
-one hard measurement and everything is composed to it rather than squeezed into
-it: a 12px gutter leaves a 396px content width, which at 1.91:1 gives a 207px
-preview — the height that sets the popup's proportion.
+800px fixed width (Chrome's popup maximum), 12px gutter. The stage is wider
+than most platforms draw a link card, so each card's wrapper caps it at the
+platform's approximate width and centres it (`widthClassName` in
+`PLATFORM_TABS`): X 516px, Facebook 500px, LinkedIn 552px, Discord 432px,
+WhatsApp 396px, Reddit 640px. Slack fills the stage, and the Image tab is capped
+at 600px so Checks start above the 600px fold. A card
+must never be drawn wider than the platform draws it. Top to bottom, in every
+ready state:
 
-Vertical rhythm runs on three steps: 12px around the shell, 8px between the tab
-strip and the panel, 8px inside a card's text block. Card internals follow the
-platform (Facebook and LinkedIn pad 16px horizontal, 8px vertical; Slack indents
-12px from its accent bar).
+1. **Header** (`popup-header.tsx`, shared by every state): glow, app mark, host
+   (15px semibold) over path (13px mono, muted), status on the right.
+2. **Tab track**: a translucent pill with a hairline ring. Tabs carry a glyph,
+   the platform name, and a warning dot when that platform has an issue. The
+   strip scrolls horizontally; it never wraps. HeroUI's fade (shortened to
+   28px) and chevrons appear only while there is more to scroll, and
+   `scroll-padding-inline` keeps an arrow-key-focused tab clear of both.
+3. **Stage**: a dotted `rounded-3xl` well with 8px padding. A caption row
+   (platform name, the `twitter:card` value on X, Slack and Discord, and the
+   image dimensions or "No image" / "Did not load"), then the light-scoped
+   card, then the related-issue line when that platform has checks.
+4. **Checks**, 5. **Raw tags**, 6. **Cache note**.
 
-Structure is one tab strip over one panel. The strip scrolls horizontally when
-labels overflow 420px; it does not wrap. There is no scrolling in the common
-preview case and no responsive behaviour — the popup has exactly one viewport,
-which is what makes 420px a design surface rather than a breakpoint. The Tags
-tab is taller when it lists issues and raw tags; that height is content, not a
-second screen.
-
-The image-led surfaces — Image, X large card, Facebook, LinkedIn, Reddit —
-reserve a 1.91:1 box before the image loads, so a slow or broken URL never
-collapses the layout mid-render. **Slack, WhatsApp, and X summary are the
-exceptions:** they render a square thumbnail beside the text, because that is
-those platforms' real unfurl geometry. Discord switches: large image below the
-text when `twitter:card` is `summary_large_image` (or the image is wide), small
-thumbnail on the right otherwise.
-
-Popup height therefore varies by tab, and by how much text a card has. That
-variation is a consequence of transcribing different layouts and is accepted.
-What is held constant is that height is stable *within* a tab — it does not
-change as an image loads, fails, or is retried. **Discord's large-image layout
-is the exception:** the image has no reserved aspect box (`max-h-[300px]` only),
-so popup height can grow when that image loads. That matches Discord's embed.
-
-### Named Rules
-
-**The No Second Screen Rule.** Choosing a platform costs one click on the tab
-strip; nothing costs two. Horizontal overflow on the strip is still one click.
-A chrome issue count that selects Tags is still one click. No disclosures,
-accordions, hover-only content, or wrapping the tabs onto a second row. Within
-a tab, everything is visible at once. They are here for four seconds.
-
-## Elevation & Depth
-
-Flat, with one inherited exception.
-
-Depth is tonal: Paper for the field, Frame Grey one step down for the letterbox
-behind an image. That single step is the entire depth vocabulary, and it exists
-for a functional reason — to reveal the edges of a transparent or undersized
-image — not to suggest layering.
-
-The exception is HeroUI's selected-tab pill, which ships with `--surface-shadow`
-(`0 2px 4px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06), 0 0 1px
-rgba(0,0,0,0.06)`). It is a component default rather than a decision made here,
-it is barely perceptible at this scale, and it disappears entirely in dark mode
-where `--surface-shadow` resolves to transparent. Left as-is; overriding a
-library default to satisfy a rule about our own authoring would be pedantry.
-No *new* shadow should be added.
-
-A shadow under a preview card would read as "this card is floating in a feed",
-which is precisely the wrong claim. The cards are specimens on a sheet.
-
-Store artwork is the one place this does not apply. The finished screenshots in
-`marketing/` show the popup casting a drop shadow over a browser window, because
-there it is being depicted as a floating panel. That is a photograph of the
-product, not the product.
-
-### Named Rules
-
-**The Flat Sheet Rule.** No hand-authored `box-shadow` in `entrypoints/popup/`.
-Depth is a background-colour step or it does not exist. HeroUI's own component
-shadows are inherited, not authored, and are exempt.
-
-## Shapes
-
-Two radius languages, matching the two colour systems.
-
-The chrome uses generous, soft corners: `rounded-2xl` (16px) on the standalone
-preview frame, HeroUI's `--radius` (8px) and `--field-radius` (12px) on
-controls. Soft enough to feel like part of a modern browser popup, plain enough
-to disappear.
-
-Card corners are transcribed: X at 16px, LinkedIn at 8px, Facebook square,
-Slack square with a 4px left accent bar, Discord with a 4px `theme-color` bar
-on a dark embed, WhatsApp at 8px, Reddit at 8px. **Slack's bar and Discord's
-bar are a deliberate, scoped exception to the general prohibition on thick
-side-stripe borders** — they are what those platforms actually draw, and
-removing them would make the imitation wrong. They are permitted inside
-`SlackPreview` and `DiscordPreview` and nowhere else.
-
-Borders throughout are 1px hairlines. Nothing in the chrome uses a border to
-decorate; a border either bounds a real container or it is removed.
+Dimensions are only shown for the image they were measured from (`tags.image`),
+never against X's separate `twitter:image`.
 
 ## Components
 
-### Tab Strip
+### Header status
 
-- **Character:** a plain segmented control. Labels overflow into HeroUI's
-  `Tabs.ListContainer` horizontal scroll; they never wrap to a second row.
-- **Labels:** Image, X, Facebook, LinkedIn, Slack, Discord, WhatsApp, Reddit,
-  Tags — the platform's own name, no icons. Tags is chrome, last in the strip.
-- **Issue count:** when `evaluateChecks` returns items, a one-line ghost
-  control above the strip (`3 issues`) selects the Tags tab. The count is
-  chrome, not a badge on the tab label.
-- **Selected:** HeroUI's default (primary) `Tabs.Indicator` — a full-height white
-  pill (`--segment`) with a `calc(var(--radius) * 3)` corner, carrying
-  `--surface-shadow`, sliding between tabs over 250ms. The track behind it is
-  `--default`. This is the shipped treatment and is what `preview-tabs.tsx`
-  renders today; the accent-underline alternative is HeroUI's `secondary`
-  variant, which this project does not use.
-- **Focus:** 2px ring, offset 2px, in Signal Blue
-- **Default:** the Image tab. It shows the resolved fallback (`og:image`, then
-  `twitter:image`). X, Facebook, LinkedIn, Slack, WhatsApp, and Reddit derive
-  from that same fallback. Discord does not — it uses `og:image` only.
+- Loading: "Reading tags" shimmer, faded in after 300ms.
+- Restricted: "Not readable". Error: "No result". Both are chips, not buttons.
+- Ready: "N issues" (warning) or "No issues" (success). Pressing it focuses
+  the Checks section and scrolls it into view (instant under reduced motion).
+  Accessible name: "N issues. Go to Checks".
 
-### Preview Frame (signature component)
+### Tab dots and the related-issue line
 
-The letterbox that holds the standalone `og:image`.
+Both come from one pure module, `check-platforms.ts`. A check maps to a
+platform when it changes what that platform's card in this popup draws
+(fallback text, fallback or missing image, card variant, length limit) or its
+message names that platform. `CHECK_PLATFORMS` holds the platforms that hold on
+every page; `checksForPlatform(checks, platform, tags)` adds the ones that
+depend on the tags: a broken or missing image reaches every card that draws
+that URL (`platformImage`), and `image-file-size` reaches Facebook above 8 MB.
+Page-wide checks map to no platform. The dot is a HeroUI `Badge` on the tab
+icon, at the tab's start, so the strip's scroll chevron never covers it. It is
+`aria-hidden`; the count is in the tab's accessible name. The
+related line quotes the first matching check verbatim, then links "N more in
+Checks". Messages are never rewritten per platform.
 
-- **Shape:** 16px radius, `overflow: hidden`
-- **Background:** Frame Grey
-- **Aspect:** locked at 1.91:1 — reserved before load, never collapsed
-- **Fit:** `object-contain` here, so the image is judged whole and undistorted.
-  Inside the platform cards it switches to `object-cover`, because that is what
-  those platforms do to it. **The difference is the point:** the Image tab shows
-  what you made, the platform tabs show what survives.
+### Checks
 
-### Platform Cards
+One `ItemCardGroup`. The header shows "Checks" and the count, plus a copy
+button that copies the page URL and every message. Each row is a warning tile
+and the message split at its first sentence (`splitCheckMessage`): the lead in
+14px, the detail in 13px muted. Tag names in messages render as inline code.
+Clean state: one success row, "No issues in the tags this popup can see." and
+"N of 12 tags set."
 
-- **Character:** transcriptions, not components. Each is a fixed reproduction of
-  one platform's card at share time.
-- **Rules:** hardcoded hex only; no theme tokens; no shared abstraction across
-  the cards. They look similar today and will diverge whenever a platform changes
-  its card — a shared base component would fight that. **Discord's left bar is
-  the exception:** it uses the page `theme-color` (falling back to `#202225`)
-  because Discord does. Every other card colour stays a literal hex.
-- **X:** `twitter:card` `summary_large_image` and `player` use the large overlay;
-  missing or `summary` is the small square-thumbnail card. `player` is an
-  approximation — Tags names that this popup draws the image card, not the video
-  player. Drawing the large card when `twitter:card` is absent is a correctness
-  bug.
-- **Discord:** dark embed, `theme-color` left bar (default `#202225`),
-  `og:image` only — never `twitter:image`. Large image vs right thumbnail
-  follows `twitter:card` and image aspect.
-- **WhatsApp:** compact light card, 72px thumb, two-line title, one-line
-  description. HTTP and tiny images are named in Tags, not smoothed in the card.
-- **Reddit:** new-Reddit wide 1.91:1 card, center crop. Old Reddit's square crop
-  is named in Tags, not drawn as a second specimen.
-- **States:** image failures are tracked per URL. A broken `twitter:image` must
-  not hide a working `og:image` on Facebook, LinkedIn, Slack, WhatsApp, Reddit,
-  or Discord, and the reverse must not hide a working X image. Tags names each
-  failed tag separately.
+### Raw tags
 
-### Tags (chrome)
+One `Card`, three groups (Open Graph, X, Other), each its own `Table` because
+React Aria tables have no row groups. Tag names are mono and muted; values are
+mono for URLs, numbers and card types, sans for prose. Values wrap in full. An
+empty value shows a dashed "Not set" chip and, when `fallbackNote` knows one,
+what previews use instead. `theme-color` shows a swatch only when both
+`CSS.supports("color", value)` and `parseColor(value)` accept it, so a
+page-controlled string never reaches a style. Copy buttons are always visible.
 
-App chrome, not a platform card. A flat list of checks (no accordion), then a
-raw tag table (property, value, copy), then a one-line note that Facebook,
-LinkedIn, Reddit, and WhatsApp cache the first scrape. Empty copy: `No issues
-in the tags this popup can see.` Issue copy names the tag or URL at fault.
+### Empty states
 
-### Empty States
+- Inside cards (unchanged): "No og:image" and "Image failed to load", light in
+  both schemes.
+- Restricted / error: a `Card` holding `EmptyState` with a soft accent (lock)
+  or soft warning (circle-exclamation) tile. The header still shows the tab.
+- Loading: skeletons for the tab track, caption and 1.91:1 image, faded in after
+  300ms.
+- No action buttons. The fix lives in the user's HTML.
 
-Three, all built on the same HeroUI `EmptyState` at size `sm`, centred in the
-frame the image would have occupied:
+### Platform cards (unchanged)
 
-- **No og:image** — the document has no Open Graph or Twitter image tag
-- **Image failed to load** — the tag exists, the URL did not return an image
-- **Restricted page** / **Preview unavailable** — the tab cannot be read
+Transcriptions, not components. Hardcoded hex, no theme tokens, no shared
+abstraction. X uses the large card for `summary_large_image` and `player`, the
+small card otherwise. Discord reads `og:image` only and follows `twitter:card`
+and image aspect. Slack's 4px accent bar and Discord's `theme-color` bar are
+the only thick side borders allowed, because those platforms draw them. The
+Image tab uses `object-contain` (what you made); cropping cards use
+`object-cover` (what survives).
 
-- **Media:** a single line icon, never illustration, never colour
-- **Copy:** title states the condition, description names the specific tag or URL
-  at fault
-- **No action button.** There is nothing for the user to do in the popup; the fix
-  is in their HTML.
+## Motion
 
-**These are the most important components in the product.** Roughly speaking, a
-user who opens this popup and sees a correct card has learned little; a user who
-sees an empty state has learned exactly what to fix. They get the same craft as
-the success path.
+| Element | Motion | Reduced motion |
+|---|---|---|
+| Tab indicator | HeroUI default CSS transition, 250ms | Off (HeroUI `motion-reduce`) |
+| Copy feedback | Icon fade and zoom-in, 150ms; tint `transition-colors` 150ms | `motion-reduce:animate-none` / `transition-none` |
+| Loading | Fade in after 300ms; `Skeleton` shimmer; `TextShimmer` | Fade off; `.skeleton` and `.text-shimmer` animation off |
+| Status pill to Checks | `scrollIntoView` smooth | `behavior: "auto"` |
 
-## Do's and Don'ts
+No motion on the glow, the app mark, or the status pill.
 
-### Do:
+## Dark mode
 
-- **Do** write chrome colours as HeroUI tokens (`bg-background`,
-  `text-foreground`, `bg-surface-secondary`) and card colours as literal hex,
-  except Discord's `theme-color` bar.
-- **Do** reserve the 1.91:1 box before the image loads on Image, X large,
-  Facebook, LinkedIn, and Reddit. Slack, WhatsApp, and X summary keep a square
-  thumbnail. Discord follows `twitter:card` / aspect.
-- **Do** keep `object-contain` on the Image tab and `object-cover` in the
-  platform cards that crop. Discord's large image is `object-contain` because
-  Discord scales to fit rather than center-cropping. That mismatch is
-  information.
-- **Do** name the specific tag or URL at fault in failure copy.
-- **Do** hold the chrome to WCAG 2.2 AA, and hold card *structure* — alt text,
-  semantics, keyboard reach, focus order — to AA as well.
-- **Do** keep the `--muted` override in `style.css`. HeroUI's stock value
-  (`#71717a`) measures 4.43:1 on Paper and 4.20:1 on Frame Grey, under the 4.5:1
-  body minimum; the override clears both. Do not revert to the stock token.
-- **Do** treat a platform's ugly choice as correct inside its own card.
+`main.tsx` reads `prefers-color-scheme` and sets `.dark` or `.light` plus
+`data-theme` on `<html>`, and updates them live when the OS setting changes.
+MV3 blocks inline scripts, so `style.css` also carries a
+`prefers-color-scheme: dark` block on `:root` that paints the right background
+before the module runs. Cards never invert.
 
-### Don't:
+## Accessibility
 
-- **Don't** hand-author a `box-shadow` in `entrypoints/popup/`. HeroUI's own
-  component shadows are inherited and exempt.
-- **Don't** apply theme tokens, dark mode, or house radii to the platform cards.
-- **Don't** invert the cards in dark mode; the chrome inverts, the specimens
-  keep the colours those platforms actually render. Discord stays dark.
-- **Don't** use `border-left` or `border-right` above 1px as an accent —
-  `SlackPreview`'s 4px bar and `DiscordPreview`'s `theme-color` bar are the
-  permitted instances, because those platforms draw them.
-- **Don't** put chrome text below 13px to win space at 420px.
-- **Don't** introduce a second accent colour, or use Signal Blue for anything but
-  focus and selection.
-- **Don't** abstract the platform cards into a shared configurable
-  component. They are transcriptions that happen to rhyme.
-- **Don't** wrap the tab strip onto two rows, or add a second navigation layer
-  to reach Discord, WhatsApp, Reddit, or Tags.
-- **Don't** draw fake browser chrome, phone bezels, or app sidebars around a
-  preview. The card is the subject.
-- **Don't** add empty-state action buttons; the fix lives in the user's HTML.
+- WCAG 2.2 AA on chrome (table above). Cards are exempt on copied colour and
+  type only; their structure is held to AA.
+- 13px minimum chrome text.
+- Focus ring is the accent (5.21:1 light, 7.74:1 dark).
+- Tab accessible names include the issue count ("Slack, 2 issues").
+- Every motion respects `prefers-reduced-motion`.
+- The cache note is an `Alert` without `role="alert"`, so it is not announced
+  on every open.
+
+## Do's and don'ts
+
+**Do**
+
+- Build chrome from HeroUI OSS and Pro components first, styled through tokens
+  and `className`.
+- Keep every card inside the light-scoped wrapper.
+- Name the tag or URL at fault. Flat, factual copy.
+- Re-measure contrast after changing any token or glow alpha.
+
+**Don't**
+
+- Restyle, re-token, or add shadows to a platform card.
+- Invent a verdict, score or severity word.
+- Put chrome text under 13px.
+- Use favicons in the chrome, or load icons from the network.
+- Draw fake browser chrome or phone bezels around a card.

@@ -4,7 +4,7 @@
 
 This is a WXT browser extension built with React and TypeScript. Extension code lives in `entrypoints/popup/`: `main.tsx` mounts the popup, `app.tsx` coordinates UI states, and feature components, hooks, styles, and Open Graph extraction utilities sit alongside it. Keep tests next to the code they cover, as in `extract-open-graph.test.ts`.
 
-Static extension icons are under `public/icons/`. Finished Chrome Web Store artwork lives in `marketing/`; it is image assets only, with no build step. WXT generates `.wxt/` and `.output/`, so neither directory should be edited or committed. Root configuration includes `wxt.config.ts`, `tsconfig.json`, and `biome.json`.
+Static extension icons are under `public/icons/`. Finished Chrome Web Store artwork lives in `marketing/`; it is image assets only, with no build step. WXT generates `.wxt/` and `.output/`, so neither directory should be edited or committed. Root configuration includes `wxt.config.ts`, `tsconfig.json`, and `biome.json`. `vite-icon-subset.ts` is the Vite plugin that bundles the icons named in `ICON_NAMES` so the popup never fetches icons from the network.
 
 ## Build, Test, and Development Commands
 
@@ -28,7 +28,7 @@ Biome is authoritative: use two-space indentation, double quotes, and organized 
 
 ## Testing Guidelines
 
-Use Vitest with `describe`, `it`, and `expect`. Name test files `*.test.ts` or `*.test.tsx` and co-locate them with the implementation. Unit tests belong on the pure helpers in `extract-open-graph.ts` and `evaluate-checks.ts` (URL normalization, restricted pages, missing metadata, check messages). There is no coverage threshold. Do not require component tests for platform preview cards or popup chrome; those are reviewed visually.
+Use Vitest with `describe`, `it`, and `expect`. Name test files `*.test.ts` or `*.test.tsx` and co-locate them with the implementation. Unit tests belong on the pure helpers in `extract-open-graph.ts` (including `describeTab`), `evaluate-checks.ts` (including `splitCheckMessage` and `fallbackNote`) and `check-platforms.ts` (the check-id to platform map behind the tab issue dots): URL normalization, restricted pages, missing metadata, check messages, platform mapping. There is no coverage threshold. Do not require component tests for platform preview cards or popup chrome; those are reviewed visually.
 
 ## Commit & Pull Request Guidelines
 
@@ -43,7 +43,7 @@ Codex: post only findings that would ship a wrong card, drop tags, leak data, or
 - Formatting, imports, naming taste, comment density, extra abstractions, or anything Biome/`pnpm check` already covers.
 - Unused helpers, types, or missing UI on a stacked PR. Later PRs in the same stack are allowed to wire them up.
 - Missing tests for `platform-previews.tsx`, `preview-tabs.tsx`, or other React chrome. Tests are for extract/check helpers only.
-- Horizontal scrolling of the tab strip at 420px. That layout is intentional.
+- Horizontal scrolling of the tab strip at 800px. That layout is intentional.
 - Hardcoded third-party colours, type, or crops inside platform cards. Fidelity beats taste; HeroUI tokens must not leak into those cards.
 - Discord using `og:image` only (no `twitter:image` fallback). That matches Discord.
 - Hypothetical timeouts, 403/405 HEAD bodies, mid-load layout shifts, or other speculative edge cases unless they already break the common path.
