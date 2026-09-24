@@ -22,8 +22,6 @@ jobs:
       - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2  # v2.0.2
         env:
           HEROUI_AUTH_TOKEN: ${{ secrets.HEROUI_AUTH_TOKEN }}
-        with:
-          cache: true
 
       - parallel:
           - name: Check

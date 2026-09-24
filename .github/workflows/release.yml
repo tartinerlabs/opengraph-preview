@@ -32,8 +32,6 @@ jobs:
           fetch-tags: true
 
       - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2  # v2.0.2
-        with:
-          cache: true
 
       - run: pnpm exec semantic-release
         env:
