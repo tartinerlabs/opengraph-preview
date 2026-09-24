@@ -1,5 +1,14 @@
 import { EmptyState } from "@heroui-pro/react";
 import { Icon } from "@iconify/react";
+import { withCacheBuster } from "./extract-open-graph.ts";
+
+// One token per popup open: every card shares a single fresh request instead
+// of the browser serving a stale cached og:image.
+const CACHE_BUST_TOKEN = Date.now().toString(36);
+
+export function freshImageSrc(src: string): string {
+  return withCacheBuster(src, CACHE_BUST_TOKEN);
+}
 
 type PreviewEmptyKind = "broken" | "missing";
 
@@ -58,5 +67,12 @@ export function PreviewImage({
     return <PreviewEmptyState kind={src && broken ? "broken" : "missing"} />;
   }
 
-  return <img alt={alt} className={className} onError={onBroken} src={src} />;
+  return (
+    <img
+      alt={alt}
+      className={className}
+      onError={onBroken}
+      src={freshImageSrc(src)}
+    />
+  );
 }
