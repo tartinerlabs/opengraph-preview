@@ -4,18 +4,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.22.0",
-      "onFail": "download"
-    },
-    "runtime": {
-      "name": "node",
-      "version": "26.7.0",
-      "onFail": "download"
-    }
-  },
+
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
@@ -73,5 +62,17 @@
     "vitest": "4.1.10",
     "web-ext": "10.6.0",
     "wxt": "0.21.4"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.4.0",
+      "onFail": "download"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "26.8.2",
+      "onFail": "download"
+    }
   }
 }
