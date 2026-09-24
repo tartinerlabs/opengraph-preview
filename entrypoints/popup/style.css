@@ -1,12 +1,6 @@
 @import "tailwindcss";
 @import "@heroui/styles";
-/* HeroUI Pro ships its component CSS unlayered, which would beat every
-   Tailwind utility passed as className. Layer it with HeroUI's own component
-   styles so className overrides work the same as on OSS components. */
-@import "@heroui-pro/react/css/components/empty-state.css" layer(components);
-@import "@heroui-pro/react/css/components/item-card.css" layer(components);
-@import "@heroui-pro/react/css/components/item-card-group.css" layer(components);
-@import "@heroui-pro/react/css/components/text-shimmer.css" layer(components);
+@import "@heroui-pro/react/css";
 
 /* Tokens. HeroUI declares its tokens inside @layer base; these overrides are
    unlayered so they win, and they are ordered light -> prefers-color-scheme
@@ -127,7 +121,7 @@
 }
 
 /* HeroUI's styling guide puts BEM overrides in @layer components. They come
-   after @heroui/styles and the layered Pro imports, so they win within the
+   after @heroui/styles and @heroui-pro/react/css, so they win within the
    layer, and Tailwind utilities passed as className still beat them. The
    custom classes below (glow, stage) live here for the same reason. */
 @layer components {

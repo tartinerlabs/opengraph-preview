@@ -42,7 +42,7 @@ The extractor's pure helpers (`resolveOgImageUrl`, `isRestrictedTabUrl`, `displa
 Biome is authoritative: use two-space indentation, double quotes, and organized imports. Prefer small typed functions and React function components. Name component files in kebab case (`preview-image.tsx`), components and types in PascalCase, hooks with a `use` prefix, and other functions in camelCase. Keep `readOpenGraphFromDocument` self-contained because the browser serializes it for script injection.
 
 - Relative imports carry explicit extensions (`./app.tsx`, `./extract-open-graph.ts`); `allowImportingTsExtensions` is on.
-- UI comes from `@heroui/react` and `@heroui-pro/react` (v3 compound components: `EmptyState.Header`, `Tabs.Panel`). Pro CSS is imported per-component in `style.css`.
+- UI comes from `@heroui/react` and `@heroui-pro/react` (v3 compound components: `EmptyState.Header`, `Tabs.Panel`). Pro CSS comes from the single documented `@import "@heroui-pro/react/css"` in `style.css`, after `@heroui/styles`; it is already in `@layer components`, so do not import per-component files.
 - Build chrome from HeroUI OSS/Pro components first; hand-roll markup only where no component fits (the dotted stage, the header glow).
 - Popup width is fixed at 800px (Chrome's popup maximum) in `style.css`; height is capped at 600px by the browser and the popup scrolls past it.
 - Dark mode follows the OS: `main.tsx` sets `.dark`/`data-theme` on `<html>`, and `style.css` defines light, first-paint `prefers-color-scheme`, and `.dark` token blocks. Chrome text never goes below 13px; motion has a `prefers-reduced-motion` fallback.
