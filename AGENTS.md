@@ -45,15 +45,6 @@ Biome is authoritative: use two-space indentation, double quotes, and organized 
 - UI comes from `@heroui/react` and `@heroui-pro/react` (v3 compound components: `EmptyState.Header`, `Tabs.Panel`). Pro CSS is imported per-component in `style.css`.
 - Popup width is fixed at 420px in `style.css`; layouts must work at that width.
 
-## Design Context
-
-Read [PRODUCT.md](PRODUCT.md) before any UI work; [DESIGN.md](DESIGN.md) carries the visual system. The rules that catch people out:
-
-- **Fidelity over taste.** Inside a platform card, the platform's design wins. Making a card look better than the real thing is a correctness bug, not an improvement; it produces a wrong ship/no-ship decision.
-- **Two systems, one border.** App chrome uses HeroUI tokens (`bg-background`, `text-foreground`, `bg-surface-secondary`). Platform cards use hardcoded third-party hex, except Discord's `theme-color` bar. Neither leaks into the other.
-- **Accessibility.** WCAG 2.2 AA on app chrome. The platform cards are exempt on copied colour and type values only; structure (alt text, semantics, keyboard, focus) is held to AA everywhere.
-- Voice is flat and specific: name the tag or URL at fault. No exclamation marks, no apologies.
-
 ## Testing Guidelines
 
 Use Vitest with `describe`, `it`, and `expect`. Name test files `*.test.ts` or `*.test.tsx` and co-locate them with the implementation. Unit tests belong on the pure helpers in `extract-open-graph.ts` and `evaluate-checks.ts` (URL normalization, restricted pages, missing metadata, check messages). There is no coverage threshold. Do not require component tests for platform preview cards or popup chrome; those are reviewed visually.
