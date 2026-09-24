@@ -6,14 +6,19 @@ import {
   resolveOgImageUrl,
 } from "./extract-open-graph.ts";
 
+export type TabIdentity = { title: string; url: string };
+
 export type PreviewState =
-  | { status: "loading" }
-  | { status: "restricted" }
-  | { status: "error" }
-  | { status: "ready"; tags: OpenGraphTags };
+  | { status: "loading"; tab: TabIdentity | null }
+  | { status: "restricted"; tab: TabIdentity | null }
+  | { status: "error"; tab: TabIdentity }
+  | { status: "ready"; tab: TabIdentity; tags: OpenGraphTags };
 
 export function useOpenGraphPreview(): PreviewState {
-  const [state, setState] = useState<PreviewState>({ status: "loading" });
+  const [state, setState] = useState<PreviewState>({
+    status: "loading",
+    tab: null,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -24,11 +29,20 @@ export function useOpenGraphPreview(): PreviewState {
         currentWindow: true,
       });
 
-      if (!tab?.id || isRestrictedTabUrl(tab.url)) {
+      // activeTab grants url and title for the active tab once the popup opens.
+      const identity: TabIdentity | null = tab
+        ? { title: tab.title ?? "", url: tab.url ?? "" }
+        : null;
+
+      if (!tab?.id || !identity || isRestrictedTabUrl(tab.url)) {
         if (!cancelled) {
-          setState({ status: "restricted" });
+          setState({ status: "restricted", tab: identity });
         }
         return;
+      }
+
+      if (!cancelled) {
+        setState({ status: "loading", tab: identity });
       }
 
       try {
@@ -43,13 +57,14 @@ export function useOpenGraphPreview(): PreviewState {
         }
 
         if (!raw) {
-          setState({ status: "error" });
+          setState({ status: "error", tab: identity });
           return;
         }
 
         const pageUrl = tab.url ?? raw.url;
         setState({
           status: "ready",
+          tab: identity,
           tags: {
             ...raw,
             faviconUrl:
@@ -62,7 +77,7 @@ export function useOpenGraphPreview(): PreviewState {
         });
       } catch {
         if (!cancelled) {
-          setState({ status: "restricted" });
+          setState({ status: "restricted", tab: identity });
         }
       }
     };
