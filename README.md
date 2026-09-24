@@ -1,8 +1,15 @@
 # Open Graph Preview
 
+![Open Graph Preview](marketing/marquee-tile-1400x560.png)
+
 Browser extension that reads the current tab’s Open Graph tags and previews the standalone `og:image`, plus how it would look on X, Facebook, LinkedIn, Slack, Discord, WhatsApp, and Reddit. A Tags tab lists the live values and names crawler-invisible tags.
 
 Unlike websites such as metatags.io, this works on **localhost** — it reads the HTML already rendered in the tab, including Next.js `opengraph-image` / `generateMetadata` output.
+
+<p>
+  <img alt="X card preview" src="marketing/screenshot-x.png" width="49%" />
+  <img alt="Tag checks flagging broken tags" src="marketing/screenshot-tags.png" width="49%" />
+</p>
 
 ## Develop
 
