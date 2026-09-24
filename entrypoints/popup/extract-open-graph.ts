@@ -67,6 +67,20 @@ export function resolveOgImageUrl(image: string, pageUrl: string): string {
   }
 }
 
+export function withCacheBuster(url: string, token: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return url;
+    }
+    const param = `_ogp=${encodeURIComponent(token)}`;
+    parsed.search = parsed.search ? `${parsed.search}&${param}` : `?${param}`;
+    return parsed.href;
+  } catch {
+    return url;
+  }
+}
+
 export function displayHostname(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./i, "");

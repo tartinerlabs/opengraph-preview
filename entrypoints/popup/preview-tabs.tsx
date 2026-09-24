@@ -13,6 +13,7 @@ import {
   WhatsAppPreview,
   XPreview,
 } from "./platform-previews.tsx";
+import { freshImageSrc } from "./preview-image.tsx";
 
 type PreviewTabsProps = {
   defaultSelectedKey?: string;
@@ -69,7 +70,7 @@ export function PreviewTabs({
         setNaturalHeight(null);
       }
     };
-    img.src = tags.image;
+    img.src = freshImageSrc(tags.image);
 
     return () => {
       cancelled = true;
