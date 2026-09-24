@@ -1,8 +1,15 @@
 # Open Graph Preview
 
+![Open Graph Preview](marketing/marquee-tile-1400x560.png)
+
 Browser extension that reads the current tab’s Open Graph tags and previews the standalone `og:image`, plus how it would look on X, Facebook, LinkedIn, Slack, Discord, WhatsApp, and Reddit. Checks and Raw tags sit below every preview: Raw tags lists the live values, and Checks names crawler-invisible tags.
 
 Unlike websites such as metatags.io, this works on **localhost** — it reads the HTML already rendered in the tab, including Next.js `opengraph-image` / `generateMetadata` output.
+
+<p>
+  <img alt="X card preview" src="marketing/screenshot-x.png" width="49%" />
+  <img alt="Tag checks flagging broken tags" src="marketing/screenshot-tags.png" width="49%" />
+</p>
 
 ## Develop
 
@@ -44,4 +51,4 @@ The extension is a single popup entrypoint (no background or content script). Ev
 
 ## Contributing
 
-See [AGENTS.md](AGENTS.md) for structure, coding style, and commit conventions (Conventional Commits, enforced by commitlint). [CLAUDE.md](CLAUDE.md) adds architecture notes for AI coding agents.
+See [AGENTS.md](AGENTS.md) for structure, coding style, and commit conventions (Conventional Commits, enforced by commitlint). It also covers architecture and design context for AI coding agents.

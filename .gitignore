@@ -15,12 +15,7 @@ stats-*.json
 .wxt
 web-ext.config.ts
 
-# Impeccable design skill (vendored copies + local state)
 .claude
-.impeccable
-.github/agents
-.github/hooks
-.github/skills
 
 # Editor directories and files
 .vscode/*

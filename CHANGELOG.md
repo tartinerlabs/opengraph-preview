@@ -1,3 +1,11 @@
+# [0.3.0](https://github.com/tartinerlabs/opengraph-preview/compare/v0.2.0...v0.3.0) (2026-09-24)
+
+
+### Features
+
+* redesign extension icon and store artwork ([6c65f37](https://github.com/tartinerlabs/opengraph-preview/commit/6c65f37bc20c675f0be648b23e78834f7634e3dd))
+* use brand indigo as popup accent ([2584e48](https://github.com/tartinerlabs/opengraph-preview/commit/2584e48ad6d81daf2554e49d842073cda74fdac0))
+
 # [0.2.0](https://github.com/tartinerlabs/opengraph-preview/compare/v0.1.1...v0.2.0) (2026-09-24)
 
 

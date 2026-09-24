@@ -11,8 +11,8 @@
 /* Tokens. HeroUI declares its tokens inside @layer base; these overrides are
    unlayered so they win, and they are ordered light -> prefers-color-scheme
    fallback -> .dark so the light values are never pinned in dark mode.
-   Contrast for every text pair is measured in DESIGN.md. Re-measure muted
-   over the header glow whenever --glow-a/--glow-b alphas change. */
+   Re-measure muted over the header glow whenever --glow-a/--glow-b alphas
+   change. */
 :root,
 .light,
 [data-theme="light"] {
@@ -27,7 +27,9 @@
   --separator: oklch(0.905 0.01 285);
   --default: oklch(0.945 0.009 285);
   --segment: oklch(1 0 0);
-  --accent: oklch(0.54 0.21 282);
+  /* Brand indigo from the icon, one step darker than the icon's #6d5bff so it
+     clears AA: 5.04:1 on Paper and 5.50:1 for white text on the accent. */
+  --accent: #5e4df2;
   --accent-foreground: oklch(1 0 0);
   --accent-soft: oklch(0.945 0.035 282);
   --accent-soft-foreground: oklch(0.45 0.2 282);
@@ -133,8 +135,8 @@
 }
 
 /* HeroUI Pro's EmptyState at size sm ships a 14px title and a 12px
-   description. DESIGN.md sets Title 600 16/20 and Body 14/20, and 13px
-   is the chrome floor. */
+   description. Raised to Title 16/20 and Body 14/20; 13px is the chrome
+   floor. */
 .empty-state--sm .empty-state__title {
   font-size: 1rem;
   line-height: 1.25rem;
