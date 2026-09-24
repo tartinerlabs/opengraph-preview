@@ -2,7 +2,7 @@
   "name": "@tartinerlabs/opengraph-preview",
   "description": "Preview the standalone og:image and social cards for X, Facebook, LinkedIn, and Slack.",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "scripts": {
     "dev": "wxt",

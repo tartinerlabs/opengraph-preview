@@ -1,3 +1,17 @@
+# [0.4.0](https://github.com/tartinerlabs/opengraph-preview/compare/v0.3.0...v0.4.0) (2026-09-24)
+
+
+### Bug Fixes
+
+* import HeroUI Pro styles as documented ([e3a1468](https://github.com/tartinerlabs/opengraph-preview/commit/e3a14682fbe6539fe7b24fd777ffc51545431189))
+
+
+### Features
+
+* map checks to the platforms they affect ([798eaeb](https://github.com/tartinerlabs/opengraph-preview/commit/798eaeb9ff6e8507fbbd5ba25a890da9bd7ece11))
+* redesign popup with HeroUI and dark mode ([013c3ae](https://github.com/tartinerlabs/opengraph-preview/commit/013c3ae6dd7b328bc0a29bc27e5f41d9aae44f9c))
+* show the extension icon in the popup header ([5912956](https://github.com/tartinerlabs/opengraph-preview/commit/5912956fcfb585683cdb1b1e5af58c0a04d77bb5))
+
 # [0.3.0](https://github.com/tartinerlabs/opengraph-preview/compare/v0.2.0...v0.3.0) (2026-09-24)
 
 
