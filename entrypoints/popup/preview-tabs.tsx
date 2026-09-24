@@ -202,16 +202,27 @@ function TagsPanel({ checks, tags }: { checks: Check[]; tags: OpenGraphTags }) {
           No issues in the tags this popup can see.
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {checks.map((check) => (
-            <li
-              className="text-[14px] leading-5 text-foreground"
-              key={check.id}
-            >
-              {check.message}
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-[16px] font-semibold leading-5">Issues</h2>
+            <CopyButton
+              label="issues"
+              value={[tags.url, ...checks.map((check) => check.message)].join(
+                "\n",
+              )}
+            />
+          </div>
+          <ul className="flex flex-col gap-2">
+            {checks.map((check) => (
+              <li
+                className="text-[14px] leading-5 text-foreground"
+                key={check.id}
+              >
+                {check.message}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       <div className="flex flex-col gap-2">
         <h2 className="text-[16px] font-semibold leading-5">Raw tags</h2>
