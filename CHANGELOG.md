@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/tartinerlabs/opengraph-preview/compare/v0.4.0...v0.4.1) (2026-09-24)
+
+
+### Bug Fixes
+
+* name data: og:image URLs by scheme ([1d4dd52](https://github.com/tartinerlabs/opengraph-preview/commit/1d4dd52bc838f6d2331fb9e7dba5eb05732a5bcd))
+
 # [0.4.0](https://github.com/tartinerlabs/opengraph-preview/compare/v0.3.0...v0.4.0) (2026-09-24)
 
 
