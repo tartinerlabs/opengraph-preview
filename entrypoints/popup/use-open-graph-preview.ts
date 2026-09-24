@@ -52,6 +52,9 @@ export function useOpenGraphPreview(): PreviewState {
           status: "ready",
           tags: {
             ...raw,
+            faviconUrl:
+              resolveOgImageUrl(raw.faviconUrl, pageUrl) ||
+              resolveOgImageUrl("/favicon.ico", pageUrl),
             image: resolveOgImageUrl(raw.image, pageUrl),
             ogImage: resolveOgImageUrl(raw.ogImage, pageUrl),
             twitterImage: resolveOgImageUrl(raw.twitterImage, pageUrl),

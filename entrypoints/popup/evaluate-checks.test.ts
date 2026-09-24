@@ -7,12 +7,17 @@ import {
 import type { OpenGraphTags } from "./extract-open-graph.ts";
 
 const completeTags: OpenGraphTags = {
+  canonicalUrl: "https://example.com/coffee",
   crawlerInvisibleTags: [],
   description: "A page about coffee.",
+  faviconUrl: "https://example.com/favicon.ico",
   image: "https://example.com/og.png",
+  imageContentType: null,
   imageFileSizeBytes: null,
   ogDescription: "A page about coffee.",
   ogImage: "https://example.com/og.png",
+  ogImageAlt: "A cup of coffee",
+  ogImageCount: 1,
   ogImageHeight: "630",
   ogImageRaw: "https://example.com/og.png",
   ogImageWidth: "1200",
@@ -25,6 +30,7 @@ const completeTags: OpenGraphTags = {
   twitterCard: "summary_large_image",
   twitterDescription: "A page about coffee.",
   twitterImage: "https://example.com/og.png",
+  twitterImageAlt: "",
   twitterImageRaw: "https://example.com/og.png",
   twitterTitle: "Coffee",
   url: "https://example.com/coffee",
@@ -318,5 +324,214 @@ describe("evaluateChecks", () => {
         { naturalHeight: 80, naturalWidth: 80 },
       ).map((check) => check.id),
     ).not.toContain("image-too-small");
+  });
+
+  it("should flag an SVG og:image by path extension", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        ogImage: "https://example.com/og.svg?v=2",
+        ogImageRaw: "https://example.com/og.svg?v=2",
+      }).map((check) => check.message),
+    ).toContain(
+      "og:image is an SVG (https://example.com/og.svg?v=2). Social platforms do not render SVG og:image.",
+    );
+  });
+
+  it("should flag an SVG og:image by content-type", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        imageContentType: "image/svg+xml; charset=utf-8",
+      }).map((check) => check.id),
+    ).toContain("image-format");
+  });
+
+  it("should not flag PNG images as an unsupported format", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        imageContentType: "image/png",
+      }).map((check) => check.id),
+    ).not.toContain("image-format");
+  });
+
+  it("should name the first og:image when several are declared", () => {
+    expect(
+      evaluateChecks({ ...completeTags, ogImageCount: 3 }).map(
+        (check) => check.message,
+      ),
+    ).toContain(
+      "og:image is declared 3 times. Platforms use the first og:image (https://example.com/og.png).",
+    );
+  });
+
+  it("should flag a relative og:url", () => {
+    expect(
+      evaluateChecks({ ...completeTags, ogUrl: "/coffee" }).map(
+        (check) => check.message,
+      ),
+    ).toContain(
+      "og:url is not an absolute http(s) URL (/coffee). Crawlers will not resolve it.",
+    );
+  });
+
+  it("should flag og:url that differs from the canonical link", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        canonicalUrl: "https://example.com/tea",
+      }).map((check) => check.message),
+    ).toContain(
+      'og:url is https://example.com/coffee but link rel="canonical" is https://example.com/tea. Shares may be counted against different URLs.',
+    );
+  });
+
+  it("should ignore trailing-slash and hash differences between og:url and canonical", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        canonicalUrl: "https://example.com/coffee/#top",
+      }).map((check) => check.id),
+    ).not.toContain("og-url-canonical");
+  });
+
+  it("should skip the canonical comparison when canonical is missing", () => {
+    expect(
+      evaluateChecks({ ...completeTags, canonicalUrl: "" }).map(
+        (check) => check.id,
+      ),
+    ).not.toContain("og-url-canonical");
+  });
+
+  it("should flag an image without og:image:alt or twitter:image:alt", () => {
+    expect(
+      evaluateChecks({ ...completeTags, ogImageAlt: "" }).map(
+        (check) => check.message,
+      ),
+    ).toContain(
+      "og:image:alt and twitter:image:alt are missing. The preview image has no alt text.",
+    );
+  });
+
+  it("should accept twitter:image:alt in place of og:image:alt", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        ogImageAlt: "",
+        twitterImageAlt: "A cup of coffee",
+      }).map((check) => check.id),
+    ).not.toContain("missing-image-alt");
+  });
+
+  it("should name declared and actual size when dimensions differ", () => {
+    expect(
+      evaluateChecks(completeTags, {
+        naturalHeight: 600,
+        naturalWidth: 1000,
+      }).map((check) => check.message),
+    ).toContain(
+      "og:image:width and og:image:height declare 1200×630, but og:image is 1000×600.",
+    );
+  });
+
+  it("should skip the dimension mismatch when the image size is unknown", () => {
+    expect(
+      evaluateChecks(completeTags, {
+        naturalHeight: null,
+        naturalWidth: null,
+      }).map((check) => check.id),
+    ).not.toContain("image-dimension-mismatch");
+  });
+
+  it("should flag twitter:title over X's 70 character limit", () => {
+    expect(
+      evaluateChecks({ ...completeTags, twitterTitle: "a".repeat(71) }).map(
+        (check) => check.message,
+      ),
+    ).toContain(
+      "twitter:title is 71 characters. X card markup allows at most 70.",
+    );
+  });
+
+  it("should not flag a title of exactly 70 characters", () => {
+    expect(
+      evaluateChecks({ ...completeTags, twitterTitle: "a".repeat(70) }).map(
+        (check) => check.id,
+      ),
+    ).not.toContain("title-length");
+  });
+
+  it("should name og:title when X falls back to it", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        ogTitle: "a".repeat(80),
+        title: "a".repeat(80),
+        twitterTitle: "",
+      }).map((check) => check.message),
+    ).toContain("og:title is 80 characters. X card markup allows at most 70.");
+  });
+
+  it("should name the document title when no title tags exist", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        ogTitle: "",
+        title: "a".repeat(75),
+        twitterTitle: "",
+      }).map((check) => check.message),
+    ).toContain(
+      "The document title is 75 characters. X card markup allows at most 70.",
+    );
+  });
+
+  it("should flag twitter:description over X's 200 character limit", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        twitterDescription: "a".repeat(201),
+        twitterCard: "summary",
+      }).map((check) => check.message),
+    ).toContain(
+      "twitter:description is 201 characters. X card markup allows at most 200.",
+    );
+  });
+
+  it("should name og:description when X falls back to it", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        description: "a".repeat(250),
+        ogDescription: "a".repeat(250),
+        twitterCard: "summary",
+        twitterDescription: "",
+      }).map((check) => check.message),
+    ).toContain(
+      "og:description is 250 characters. X card markup allows at most 200.",
+    );
+  });
+
+  it("should name the meta description when no description tags exist", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        description: "a".repeat(210),
+        twitterCard: "summary",
+        ogDescription: "",
+        twitterDescription: "",
+      }).map((check) => check.message),
+    ).toContain(
+      "The meta description is 210 characters. X card markup allows at most 200.",
+    );
+  });
+
+  it("should not flag description length on a summary_large_image card", () => {
+    expect(
+      evaluateChecks({
+        ...completeTags,
+        twitterDescription: "a".repeat(201),
+      }).map((check) => check.id),
+    ).not.toContain("description-length");
   });
 });

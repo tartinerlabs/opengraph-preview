@@ -1,10 +1,15 @@
 export type OpenGraphTags = {
+  canonicalUrl: string;
   crawlerInvisibleTags: string[];
   description: string;
+  faviconUrl: string;
   image: string;
+  imageContentType: string | null;
   imageFileSizeBytes: number | null;
   ogDescription: string;
   ogImage: string;
+  ogImageAlt: string;
+  ogImageCount: number;
   ogImageHeight: string;
   ogImageRaw: string;
   ogImageWidth: string;
@@ -17,6 +22,7 @@ export type OpenGraphTags = {
   twitterCard: string;
   twitterDescription: string;
   twitterImage: string;
+  twitterImageAlt: string;
   twitterImageRaw: string;
   twitterTitle: string;
   url: string;
@@ -141,6 +147,34 @@ export async function readOpenGraphFromDocument(): Promise<OpenGraphTags> {
   };
   const ogImageWidth = adjacentStructured("og:image:width");
   const ogImageHeight = adjacentStructured("og:image:height");
+  const ogImageAlt = adjacentStructured("og:image:alt");
+  const ogImageCount = new Set(
+    Array.from(
+      document.querySelectorAll(
+        'meta[property="og:image"], meta[name="og:image"]',
+      ),
+    )
+      .map((el) => el.getAttribute("content")?.trim() ?? "")
+      .filter(Boolean),
+  ).size;
+  const linkHref = (...selectors: string[]): string => {
+    for (const selector of selectors) {
+      const value = document
+        .querySelector(selector)
+        ?.getAttribute("href")
+        ?.trim();
+      if (value) {
+        return value;
+      }
+    }
+    return "";
+  };
+  const faviconUrl = linkHref(
+    'link[rel~="icon" i]',
+    'link[rel="shortcut icon" i]',
+    'link[rel~="apple-touch-icon" i]',
+  );
+  const canonicalUrl = linkHref('link[rel="canonical" i]');
   const twitterCard = read(
     document,
     'meta[name="twitter:card"]',
@@ -160,6 +194,11 @@ export async function readOpenGraphFromDocument(): Promise<OpenGraphTags> {
     document,
     'meta[name="twitter:image"]',
     'meta[property="twitter:image"]',
+  );
+  const twitterImageAlt = read(
+    document,
+    'meta[name="twitter:image:alt"]',
+    'meta[property="twitter:image:alt"]',
   );
   const themeColor = read(document, 'meta[name="theme-color"]');
 
@@ -269,14 +308,16 @@ export async function readOpenGraphFromDocument(): Promise<OpenGraphTags> {
       .map(({ name }) => name);
   })().catch(() => [] as string[]);
 
-  const imageBytes = (async (): Promise<number | null> => {
+  type ImageHead = { bytes: number | null; contentType: string | null };
+  const emptyHead: ImageHead = { bytes: null, contentType: null };
+  const imageHead = (async (): Promise<ImageHead> => {
     const rawImage = ogImage || twitterImage;
     if (!rawImage) {
-      return null;
+      return emptyHead;
     }
     const resolved = new URL(rawImage, location.href);
     if (resolved.origin !== location.origin) {
-      return null;
+      return emptyHead;
     }
     const response = await fetch(resolved.href, {
       credentials: "same-origin",
@@ -284,31 +325,33 @@ export async function readOpenGraphFromDocument(): Promise<OpenGraphTags> {
       signal: AbortSignal.timeout(750),
     });
     if (!response.ok) {
-      return null;
+      return emptyHead;
     }
+    const contentType =
+      response.headers.get("content-type")?.trim().toLowerCase() || null;
     const length = response.headers.get("content-length");
-    if (!length) {
-      return null;
-    }
-    const parsed = Number(length);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      return null;
-    }
-    return parsed;
-  })().catch(() => null);
+    const parsed = length ? Number(length) : Number.NaN;
+    const bytes = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    return { bytes, contentType };
+  })().catch(() => emptyHead);
 
-  const [crawlerInvisibleTags, imageFileSizeBytes] = await Promise.all([
+  const [crawlerInvisibleTags, head] = await Promise.all([
     sourceTags,
-    imageBytes,
+    imageHead,
   ]);
 
   return {
+    canonicalUrl,
     crawlerInvisibleTags,
     description,
+    faviconUrl,
     image,
-    imageFileSizeBytes,
+    imageContentType: head.contentType,
+    imageFileSizeBytes: head.bytes,
     ogDescription,
     ogImage,
+    ogImageAlt,
+    ogImageCount,
     ogImageHeight,
     ogImageRaw: ogImage,
     ogImageWidth,
@@ -321,6 +364,7 @@ export async function readOpenGraphFromDocument(): Promise<OpenGraphTags> {
     twitterCard,
     twitterDescription,
     twitterImage,
+    twitterImageAlt,
     twitterImageRaw: twitterImage,
     twitterTitle,
     url,
