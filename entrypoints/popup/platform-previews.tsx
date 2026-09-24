@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { displayHostname, type OpenGraphTags } from "./extract-open-graph.ts";
 import { PreviewImage } from "./preview-image.tsx";
 
@@ -91,24 +92,22 @@ export function XPreview({
   const showOverlay = Boolean(cardImage) && !imageSrc.broken;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#cfd9de] bg-white font-sans">
-      <div className="relative aspect-[1.91/1] bg-[#eff3f4]">
+    <div className="flex flex-col gap-1 font-sans">
+      <div className="relative aspect-[1.91/1] overflow-hidden rounded-2xl border border-[#cfd9de] bg-[#eff3f4]">
         <PreviewImage
           alt={cardTitle}
           className="size-full object-cover"
           {...imageSrc}
         />
-        {showOverlay ? (
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-4 pb-3 pt-8">
-            <p className="line-clamp-2 text-[15px] leading-5 text-white">
-              {cardTitle}
-            </p>
-            {domain ? (
-              <p className="text-[13px] leading-4 text-[#8b98a5]">{domain}</p>
-            ) : null}
-          </div>
+        {showOverlay && cardTitle ? (
+          <p className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded bg-black/75 px-1 text-[13px] leading-4 text-white">
+            {cardTitle}
+          </p>
         ) : null}
       </div>
+      {domain ? (
+        <p className="text-[13px] leading-4 text-[#536471]">From {domain}</p>
+      ) : null}
     </div>
   );
 }
@@ -160,17 +159,19 @@ export function LinkedInPreview({
   url,
 }: PlatformPreviewProps) {
   const domain = displayHostname(url);
+  const imageSrc = previewSrc(image, brokenImageUrls, onImageBroken);
+  const showThumb = Boolean(image) && !imageSrc.broken;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-[#e0e0e0] bg-white font-sans">
-      <div className="flex aspect-[1.91/1] items-center justify-center bg-[#f3f2ef]">
+    <div className="flex items-center overflow-hidden rounded-lg border border-[#e0e0e0] bg-white font-sans">
+      {showThumb ? (
         <PreviewImage
           alt={title}
-          className="size-full object-cover"
-          {...previewSrc(image, brokenImageUrls, onImageBroken)}
+          className="aspect-[1.91/1] w-32 shrink-0 bg-[#f3f2ef] object-cover"
+          {...imageSrc}
         />
-      </div>
-      <div className="flex flex-col gap-1 px-4 py-2">
+      ) : null}
+      <div className="flex min-w-0 flex-1 flex-col gap-1 px-3 py-2">
         <p className="line-clamp-2 text-[14px] font-semibold leading-5 text-[#191919]">
           {title}
         </p>
@@ -190,31 +191,57 @@ export function LinkedInPreview({
 export function SlackPreview({
   brokenImageUrls,
   description,
+  faviconUrl,
   image,
   onImageBroken,
   siteName,
   title,
+  twitterCard,
 }: PlatformPreviewProps) {
+  const [brokenFaviconUrl, setBrokenFaviconUrl] = useState("");
   const imageSrc = previewSrc(image, brokenImageUrls, onImageBroken);
-  const showThumb = Boolean(image) && !imageSrc.broken;
+  const isLarge = twitterCard.trim().toLowerCase() === "summary_large_image";
+  const showThumb = Boolean(image) && !isLarge && !imageSrc.broken;
+  const showFavicon = Boolean(faviconUrl) && brokenFaviconUrl !== faviconUrl;
 
   return (
-    <div className="flex gap-2 border-l-4 border-[#e8e8e8] bg-white py-1 pl-3 font-sans">
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <p className="text-[13px] font-bold text-[#1d1c1d]">{siteName}</p>
-        <p className="line-clamp-2 text-[15px] font-bold leading-5 text-[#1264a3]">
-          {title}
-        </p>
-        {description ? (
-          <p className="line-clamp-3 text-[13px] leading-5 text-[#1d1c1d]">
-            {description}
+    <div className="flex flex-col gap-2 border-l-4 border-[#e8e8e8] bg-white py-1 pl-3 font-sans">
+      <div className="flex gap-2">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div className="flex items-center gap-1.5">
+            {showFavicon ? (
+              <img
+                alt=""
+                className="size-4 shrink-0 rounded-[2px] object-contain"
+                onError={() => {
+                  setBrokenFaviconUrl(faviconUrl);
+                }}
+                src={faviconUrl}
+              />
+            ) : null}
+            <p className="text-[13px] font-bold text-[#1d1c1d]">{siteName}</p>
+          </div>
+          <p className="line-clamp-2 text-[15px] font-bold leading-5 text-[#1264a3]">
+            {title}
           </p>
+          {description ? (
+            <p className="line-clamp-3 text-[13px] leading-5 text-[#1d1c1d]">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        {showThumb ? (
+          <PreviewImage
+            alt={title}
+            className="max-h-[75px] max-w-[75px] shrink-0 self-start rounded-lg object-contain"
+            {...imageSrc}
+          />
         ) : null}
       </div>
-      {showThumb ? (
+      {isLarge ? (
         <PreviewImage
           alt={title}
-          className="size-20 shrink-0 rounded-lg object-cover"
+          className="max-h-[500px] max-w-[360px] self-start rounded-lg object-contain"
           {...imageSrc}
         />
       ) : null}

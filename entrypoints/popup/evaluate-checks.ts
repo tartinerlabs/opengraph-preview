@@ -16,6 +16,9 @@ const ASPECT_TOLERANCE = 0.2;
 const MIN_IMAGE_PX = 200;
 const FACEBOOK_MAX_BYTES = 8 * 1024 * 1024;
 const WHATSAPP_MAX_BYTES = 600 * 1024;
+// X card markup docs: twitter:title max 70, twitter:description max 200.
+const X_TITLE_MAX_CHARS = 70;
+const X_DESCRIPTION_MAX_CHARS = 200;
 
 export function isRelativeImageUrl(value: string): boolean {
   const trimmed = value.trim();
@@ -107,6 +110,34 @@ export function evaluateChecks(
     }
   }
 
+  const xTitle = tags.twitterTitle
+    ? { name: "twitter:title", value: tags.twitterTitle }
+    : tags.ogTitle
+      ? { name: "og:title", value: tags.ogTitle }
+      : { name: "The document title", value: tags.title };
+  const xTitleLength = countCharacters(xTitle.value);
+  if (xTitleLength > X_TITLE_MAX_CHARS) {
+    checks.push({
+      id: "title-length",
+      message: `${xTitle.name} is ${xTitleLength} characters. X card markup allows at most ${X_TITLE_MAX_CHARS}.`,
+    });
+  }
+
+  const xDescription = tags.twitterDescription
+    ? { name: "twitter:description", value: tags.twitterDescription }
+    : tags.ogDescription
+      ? { name: "og:description", value: tags.ogDescription }
+      : { name: "The meta description", value: tags.description };
+  const xDescriptionLength = countCharacters(xDescription.value);
+  const xDrawsDescription =
+    tags.twitterCard.trim().toLowerCase() !== "summary_large_image";
+  if (xDrawsDescription && xDescriptionLength > X_DESCRIPTION_MAX_CHARS) {
+    checks.push({
+      id: "description-length",
+      message: `${xDescription.name} is ${xDescriptionLength} characters. X card markup allows at most ${X_DESCRIPTION_MAX_CHARS}.`,
+    });
+  }
+
   const card = tags.twitterCard.trim().toLowerCase();
   if (card === "player") {
     checks.push({
@@ -176,6 +207,63 @@ export function evaluateChecks(
     });
   }
 
+  if (primaryRaw && isSvgImage(primaryRaw, tags.imageContentType)) {
+    checks.push({
+      id: "image-format",
+      message: `${primaryTag} is an SVG (${primaryRaw}). Social platforms do not render SVG og:image.`,
+    });
+  }
+
+  if (tags.ogImageCount > 1) {
+    checks.push({
+      id: "multiple-og-image",
+      message: `og:image is declared ${tags.ogImageCount} times. Platforms use the first og:image (${tags.ogImageRaw}).`,
+    });
+  }
+
+  const ogUrl = tags.ogUrl.trim();
+  const canonicalUrl = tags.canonicalUrl.trim();
+  if (ogUrl && !isAbsoluteHttpUrl(ogUrl)) {
+    checks.push({
+      id: "og-url-relative",
+      message: `og:url is not an absolute http(s) URL (${ogUrl}). Crawlers will not resolve it.`,
+    });
+  } else if (
+    ogUrl &&
+    isAbsoluteHttpUrl(canonicalUrl) &&
+    normalizePageUrl(ogUrl) !== normalizePageUrl(canonicalUrl)
+  ) {
+    checks.push({
+      id: "og-url-canonical",
+      message: `og:url is ${ogUrl} but link rel="canonical" is ${canonicalUrl}. Shares may be counted against different URLs.`,
+    });
+  }
+
+  if (primaryRaw && !tags.ogImageAlt && !tags.twitterImageAlt) {
+    checks.push({
+      id: "missing-image-alt",
+      message:
+        "og:image:alt and twitter:image:alt are missing. The preview image has no alt text.",
+    });
+  }
+
+  const declaredWidth = parsePositiveInt(tags.ogImageWidth);
+  const declaredHeight = parsePositiveInt(tags.ogImageHeight);
+  if (
+    primaryRaw &&
+    declaredWidth !== null &&
+    declaredHeight !== null &&
+    imageMeta.naturalWidth !== null &&
+    imageMeta.naturalHeight !== null &&
+    (declaredWidth !== imageMeta.naturalWidth ||
+      declaredHeight !== imageMeta.naturalHeight)
+  ) {
+    checks.push({
+      id: "image-dimension-mismatch",
+      message: `og:image:width and og:image:height declare ${declaredWidth}×${declaredHeight}, but ${primaryTag} is ${imageMeta.naturalWidth}×${imageMeta.naturalHeight}.`,
+    });
+  }
+
   const width = imageMeta.naturalWidth ?? parsePositiveInt(tags.ogImageWidth);
   const height =
     imageMeta.naturalHeight ?? parsePositiveInt(tags.ogImageHeight);
@@ -211,6 +299,44 @@ export function evaluateChecks(
   }
 
   return checks;
+}
+
+function countCharacters(value: string): number {
+  return Array.from(value.trim()).length;
+}
+
+function isSvgImage(raw: string, contentType: string | null): boolean {
+  if (contentType?.toLowerCase().startsWith("image/svg+xml")) {
+    return true;
+  }
+  try {
+    return new URL(raw.trim(), "https://base.invalid/").pathname
+      .toLowerCase()
+      .endsWith(".svg");
+  } catch {
+    return false;
+  }
+}
+
+function isAbsoluteHttpUrl(value: string): boolean {
+  if (!/^https?:\/\//i.test(value)) {
+    return false;
+  }
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function normalizePageUrl(value: string): string {
+  const parsed = new URL(value);
+  parsed.hash = "";
+  if (parsed.pathname.length > 1 && parsed.pathname.endsWith("/")) {
+    parsed.pathname = parsed.pathname.slice(0, -1);
+  }
+  return parsed.href;
 }
 
 function parsePositiveInt(value: string): number | null {

@@ -16,5 +16,14 @@ export default defineConfig({
       96: "/icons/96.png",
       128: "/icons/128.png",
     },
+    commands: {
+      _execute_action: {
+        suggested_key: {
+          default: "Alt+Shift+O",
+          mac: "Alt+Shift+O",
+        },
+        description: "Open the Open Graph preview",
+      },
+    },
   },
 });
