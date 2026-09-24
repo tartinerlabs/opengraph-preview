@@ -43,4 +43,4 @@ The extension is a single popup entrypoint (no background or content script). Ev
 
 ## Contributing
 
-See [AGENTS.md](AGENTS.md) for structure, coding style, and commit conventions (Conventional Commits, enforced by commitlint). [CLAUDE.md](CLAUDE.md) adds architecture notes for AI coding agents.
+See [AGENTS.md](AGENTS.md) for structure, coding style, and commit conventions (Conventional Commits, enforced by commitlint). It also covers architecture and design context for AI coding agents.
